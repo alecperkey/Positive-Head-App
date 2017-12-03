@@ -203,7 +203,7 @@ class FinalizeGroup extends Component {
           >
             <Image
               style={styles.groupImage}
-              source={icon || { uri: 'https://facebook.github.io/react/img/logo_og.png' }}
+              source={icon || { uri: 'https://reactjs.org/logo-og.png' }}
             />
             <Text>edit</Text>
           </TouchableOpacity>

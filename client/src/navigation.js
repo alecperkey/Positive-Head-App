@@ -150,7 +150,9 @@ class AppWithNavigationState extends Component {
   }
 
   handleAppStateChange = (nextAppState) => {
-    console.log('App has changed state!', nextAppState, this.props.user.badgeCount);
+    console.log('App has changed state!', nextAppState);
+    console.log('user: ', this.props.user); // TODO figure out why undefined
+    console.log('badgecount: ', this.props.user); // TODO figure out why undefined
     if (this.props.user && FCM.getBadgeNumber()) {
       // clear notifications from center/tray
       FCM.removeAllDeliveredNotifications();

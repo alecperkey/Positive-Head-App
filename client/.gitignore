@@ -30,6 +30,8 @@ build/
 local.properties
 *.iml
 
+android/app/bin/
+
 # node.js
 #
 node_modules/

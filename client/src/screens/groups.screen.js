@@ -136,7 +136,7 @@ class Group extends Component {
           <Image
             style={styles.groupImage}
             source={{
-              uri: icon || 'https://facebook.github.io/react/img/logo_og.png',
+              uri: icon || 'https://reactjs.org/logo-og.png',
             }}
           />
           <View style={styles.groupTextContainer}>

@@ -62,7 +62,8 @@ faker.seed(123); // get consistent data every time we reload app
 db.sync({ force: true }).then(() => _.times(GROUPS, () => GroupModel.create({
   name: faker.lorem.words(3),
 }).then(group => _.times(USERS_PER_GROUP, () => {
-  const password = faker.internet.password();
+  // const password = faker.internet.password();
+  const password = 'w'; // test commit
   return bcrypt.hash(password, 10).then(hash => group.createUser({
     badgeCount: 0,
     email: faker.internet.email(),

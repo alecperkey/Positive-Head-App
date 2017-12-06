@@ -18,5 +18,7 @@ module.exports = {
         }],
         "react/no-multi-comp": [0],
         "no-bitwise": [0],
+        "react/no-multi-comp": [0],
+        "linebreak-style": [0],
     },
 };

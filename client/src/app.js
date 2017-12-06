@@ -21,7 +21,7 @@ import { logout } from './actions/auth.actions';
 import { FirebaseClient } from './firebase-client';
 
 // const URL = 'localhost:8080'; // set your comp's url here
-const URL = '192.168.1.80:8080'; // set your comp's url here
+const URL = '192.168.1.15:8080'; // set your comp's url here
 
 const networkInterface = createBatchingNetworkInterface({
   uri: `http://${URL}/graphql`,

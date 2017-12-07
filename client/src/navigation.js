@@ -7,8 +7,11 @@ import update from 'immutability-helper';
 import { map } from 'lodash';
 import { Buffer } from 'buffer';
 import { REHYDRATE } from 'redux-persist/constants';
-import { AppState } from 'react-native';
+import { AppState, Keyboard } from 'react-native';
 import FCM from 'react-native-fcm';
+
+import Icon from 'react-native-vector-icons/FontAwesome';
+// import { FontAwesome, SimpleLineIcons, EvilIcons, Ionicons } from 'react-native-vector-icons';
 
 import Groups from './screens/groups.screen';
 import Messages from './screens/messages.screen';
@@ -18,26 +21,193 @@ import NewGroup from './screens/new-group.screen';
 import Signin from './screens/signin.screen';
 import Settings from './screens/settings.screen';
 
+import HomeScreen from './screens/home.screen';
+import ProfileScreen from './screens/profile.screen';
+import ExploreScreen from './screens/explore.screen';
+import NotificationsScreen from './screens/notifications.screen';
+import NewTweetScreen from './screens/new.tweet.screen';
+import NewMessageScreen from './screens/new-message.screen';
+
+import HeaderAvatar from './components/header-avatar.component';
+import ButtonHeader from './components/button-header.component';
+
 import { USER_QUERY } from './graphql/user.query';
 import MESSAGE_ADDED_SUBSCRIPTION from './graphql/message-added.subscription';
 import GROUP_ADDED_SUBSCRIPTION from './graphql/group-added.subscription';
 import UPDATE_USER_MUTATION from './graphql/update-user.mutation';
 
 import { firebaseClient, wsClient } from './app';
+import { colors, language } from './utils/constants';
 
+const TAB_ICON_SIZE = 20;
 // tabs in main screen
 const MainScreenNavigator = TabNavigator({
   Chats: { screen: Groups },
   Settings: { screen: Settings },
 });
 
+const Tabs = TabNavigator(
+  {
+    Home: {
+      screen: HomeScreen,
+      navigationOptions: () => ({
+        headerTitle: language.FOLLOWING_FEED,
+        tabBarIcon: ({ tintColor }) =>
+          // <FontAwesome size={TAB_ICON_SIZE} color={tintColor} name="md-planet" />,
+          <Icon size={TAB_ICON_SIZE} color={tintColor} name="user" />,
+      }),
+    },
+    Profile: {
+      screen: ProfileScreen,
+      navigationOptions: () => ({
+        headerTitle: language.MY_FEED,
+        tabBarIcon: ({ tintColor }) =>
+          <Icon size={TAB_ICON_SIZE} color={tintColor} name="user" />,
+      }),
+    },
+    Notifications: {
+      screen: NotificationsScreen,
+      navigationOptions: () => ({
+        headerTitle: language.NOTIFICATIONS,
+        tabBarIcon: ({ tintColor }) =>
+          <Icon size={TAB_ICON_SIZE} color={tintColor} name="bell" />,
+      }),
+    },
+    // Explore: {
+    //   screen: ExploreScreen,
+    //   navigationOptions: () => ({
+    //     headerTitle: language.MESSAGE_INBOX,
+    //     tabBarIcon: ({ tintColor }) =>
+    //       <FontAwesome size={TAB_ICON_SIZE} color={tintColor} name="search" />,
+    //   }),
+    // },
+    Chats: {
+      screen: Groups,
+      navigationOptions: () => ({
+        headerTitle: language.MESSAGE_INBOX,
+        tabBarIcon: ({ tintColor }) =>
+          <Icon size={TAB_ICON_SIZE} color={tintColor} name="user" />,
+      }),
+    },
+    Settings: {
+      screen: Settings,
+      navigationOptions: () => ({
+        headerTitle: language.SETTINGS,
+        tabBarIcon: ({ tintColor }) =>
+          <Icon size={TAB_ICON_SIZE} color={tintColor} name="user" />,
+      }),
+    },
+  },
+  {
+    lazy: true,
+    tabBarPosition: 'bottom',
+    swipeEnabled: false,
+    tabBarOptions: {
+      showIcon: true,
+      showLabel: false,
+      activeTintColor: colors.PRIMARY,
+      inactiveTintColor: colors.LIGHT_GRAY,
+      style: {
+        backgroundColor: colors.WHITE,
+        height: 50,
+        paddingVertical: 5,
+      },
+    },
+  },
+);
+
+const NewTweetModal = StackNavigator(
+  {
+    NewTweet: {
+      screen: NewTweetScreen,
+      navigationOptions: ({ navigation }) => ({
+        headerTitle: language.COMPOSE_POST,
+        headerTitleStyle: {
+          color: '#000000',
+        },
+        headerLeft: <HeaderAvatar />,
+        headerRight: (
+          <ButtonHeader
+            side="right"
+            onPress={() => {
+              Keyboard.dismiss();
+              navigation.goBack(null);
+            }}
+          >
+            <Icon color={colors.PRIMARY} size={25} name="close" />
+          </ButtonHeader>
+        ),
+      }),
+    },
+  },
+  {
+    headerMode: 'none',
+  },
+);
+
+const NewMessageModal = StackNavigator(
+  {
+    NewTweet: {
+      screen: NewMessageScreen,
+      navigationOptions: ({ navigation }) => ({
+        headerTitle: language.COMPOSE_MESSAGE,
+        headerTitleStyle: {
+          color: '#000000',
+        },
+        headerLeft: <HeaderAvatar />,
+        headerRight: (
+          <ButtonHeader
+            side="right"
+            onPress={() => {
+              Keyboard.dismiss();
+              navigation.goBack(null);
+            }}
+          >
+            <Icon color={colors.PRIMARY} size={25} name="close" />
+          </ButtonHeader>
+        ),
+      }),
+    },
+  },
+  {
+    headerMode: 'none',
+  },
+);
+
 const AppNavigator = StackNavigator({
-  Main: { screen: MainScreenNavigator },
+  Main: {
+    screen: Tabs,
+    navigationOptions: ({ navigation }) => ({
+      headerLeft: <HeaderAvatar />,
+      headerRight: (
+        <ButtonHeader
+          side="right"
+          onPress={() => {
+            if (navigation.state.index === 0) {
+              return navigation.navigate('NewTweet');
+            } else if (navigation.state.index === 3) {
+              return navigation.navigate('NewMessage');
+            }
+            return navigation.navigate('Home');
+          }
+          }
+        >
+          <Icon color={colors.PRIMARY} size={20} name="pencil" />
+        </ButtonHeader>
+      ),
+    }),
+  },
   Signin: { screen: Signin },
   Messages: { screen: Messages },
   GroupDetails: { screen: GroupDetails },
   NewGroup: { screen: NewGroup },
   FinalizeGroup: { screen: FinalizeGroup },
+  NewTweet: {
+    screen: NewTweetModal,
+  },
+  NewMessage: {
+    screen: NewMessageModal,
+  },
 }, {
   mode: 'modal',
 });
@@ -174,6 +344,7 @@ class AppWithNavigationState extends Component {
 AppWithNavigationState.propTypes = {
   dispatch: PropTypes.func.isRequired,
   nav: PropTypes.object.isRequired,
+  // tintColor: PropTypes.string.isRequired,
   refetch: PropTypes.func,
   subscribeToGroups: PropTypes.func,
   subscribeToMessages: PropTypes.func,

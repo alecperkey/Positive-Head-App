@@ -47,16 +47,36 @@ export const messageLogic = {
                 Promise.all(userPromises).then((updatedUsers) => {
                   const registeredUsers = filter(updatedUsers, usr => usr.registrationId);
                   if (registeredUsers.length) {
+                    // registeredUsers.forEach(({ badgeCount, registrationId }) => sendNotification({
+                    //   to: registrationId,
+                    //   notification: {
+                    //     title: `${user.username} @ ${group.name}`,
+                    //     body: text,
+                    //     sound: 'default', // can use custom sounds -- see https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/SupportingNotificationsinYourApp.html#//apple_ref/doc/uid/TP40008194-CH4-SW10
+                    //     badge: badgeCount + 1, // badgeCount doesn't get updated in Promise return?!
+                    //     click_action: 'openGroup',
+                    //   },
+                    //   data: {
+                    //     title: `${user.username} @ ${group.name}`,
+                    //     body: text,
+                    //     type: 'MESSAGE_ADDED',
+                    //     group: {
+                    //       id: group.id,
+                    //       name: group.name,
+                    //     },
+                    //   },
+                    //   priority: 'high', // will wake sleeping device
+                    // }));
                     registeredUsers.forEach(({ badgeCount, registrationId }) => sendNotification({
                       to: registrationId,
-                      notification: {
-                        title: `${user.username} @ ${group.name}`,
-                        body: text,
-                        sound: 'default', // can use custom sounds -- see https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/SupportingNotificationsinYourApp.html#//apple_ref/doc/uid/TP40008194-CH4-SW10
-                        badge: badgeCount + 1, // badgeCount doesn't get updated in Promise return?!
-                        click_action: 'openGroup',
-                      },
                       data: {
+                        custom_notification: {
+                          title: `${user.username} @ ${group.name}`,
+                          body: text,
+                          sound: 'default', // can use custom sounds
+                          badge: badgeCount + 1, // badgeCount doesn't get updated in Promise return?!
+                          click_action: 'openGroup',
+                        },
                         title: `${user.username} @ ${group.name}`,
                         body: text,
                         type: 'MESSAGE_ADDED',
@@ -65,7 +85,7 @@ export const messageLogic = {
                           name: group.name,
                         },
                       },
-                      priority: 'high', // will wake sleeping device
+                      priority: 10,
                     }));
                   }
                 });
@@ -436,7 +456,7 @@ export const subscriptionLogic = {
     return getAuthenticatedUser(ctx)
       .then(user => user.getGroups({ where: { id: { $in: args.groupIds } }, attributes: ['id'] })
         .then((groups) => {
-        // user attempted to subscribe to some groups without access
+          // user attempted to subscribe to some groups without access
           if (args.groupIds.length > groups.length) {
             return Promise.reject('Unauthorized');
           }

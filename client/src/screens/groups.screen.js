@@ -110,7 +110,7 @@ const formatCreatedAt = createdAt => moment(createdAt).calendar(null, {
 
 const Header = ({ onPress }) => (
   <View style={styles.header}>
-    <Button title={'New Group'} onPress={onPress} />
+    <Button title={'New Conversation'} onPress={onPress} />
   </View>
 );
 Header.propTypes = {

@@ -158,7 +158,7 @@ class NewGroup extends Component {
     const { state } = navigation;
     const isReady = state.params && state.params.mode === 'ready';
     return {
-      title: 'New Group',
+      title: 'New Conversation',
       headerRight: (
         isReady ? <Button
           title="Next"

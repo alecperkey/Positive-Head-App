@@ -36,6 +36,13 @@ export const USER_QUERY = gql`
         id
         text
         createdAt
+        author {
+          id
+          username
+          firstName
+          lastName
+          avatar
+        }
       }
     }
   }

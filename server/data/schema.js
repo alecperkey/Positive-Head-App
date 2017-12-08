@@ -115,7 +115,7 @@ export const Schema = [`
   # a message sent from a user to a group
   type Tweet {
     id: Int! # unique id for message
-    userId: User! # user who wrote the tweet
+    author: User # tweet's author
     text: String! # message text
     createdAt: Date! # when message was created
   }

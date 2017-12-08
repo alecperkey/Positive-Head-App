@@ -4,10 +4,10 @@ import { map } from 'lodash';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-import { Group, Message, User } from './connectors';
+import { Group, Message, User, Tweet } from './connectors';
 import { pubsub } from '../subscriptions';
 import { JWT_SECRET } from '../config';
-import { groupLogic, messageLogic, userLogic } from './logic';
+import { groupLogic, messageLogic, userLogic, tweetLogic } from './logic';
 
 const MESSAGE_ADDED_TOPIC = 'messageAdded';
 const GROUP_ADDED_TOPIC = 'groupAdded';
@@ -173,6 +173,11 @@ export const Resolvers = {
     from(message, args, ctx) {
       return messageLogic.from(message, args, ctx);
     },
+  },
+  Tweet: {
+    author(tweet, args, ctx) {
+      return tweetLogic.author(tweet, args, ctx);
+    }
   },
   User: {
     avatar(user, args, ctx) {

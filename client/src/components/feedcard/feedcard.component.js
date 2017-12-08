@@ -35,7 +35,7 @@ const Wrapper = styled.View`flex: 1`;
 
 function FeedCard({
   text,
-  user,
+  author,
   createdAt,
   favoriteCount,
   favorite,
@@ -60,7 +60,7 @@ function FeedCard({
 
   return (
     <Root>
-      <FeedCardHeader {...user} createdAt={createdAt} />
+      <FeedCardHeader {...author} createdAt={createdAt} />
       <CardContentContainer>
         <CardContentText>
           {text}

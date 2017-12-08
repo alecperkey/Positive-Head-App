@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Groups from './screens/groups.screen';
 import Messages from './screens/messages.screen';
 import FinalizeGroup from './screens/finalize-group.screen';
+import UsernameSearch from './screens/username-search.screen';
 import GroupDetails from './screens/group-details.screen';
 import NewGroup from './screens/new-group.screen';
 import Signin from './screens/signin.screen';
@@ -202,6 +203,7 @@ const AppNavigator = StackNavigator({
   GroupDetails: { screen: GroupDetails },
   NewGroup: { screen: NewGroup },
   FinalizeGroup: { screen: FinalizeGroup },
+  UsernameSearch: { screen: UsernameSearch },
   NewTweet: {
     screen: NewTweetModal,
   },

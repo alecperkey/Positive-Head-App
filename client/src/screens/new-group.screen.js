@@ -160,10 +160,13 @@ class NewGroup extends Component {
     return {
       title: 'New Conversation',
       headerRight: (
-        isReady ? <Button
+        isReady ? <View><Button
+          title="Search by Username"
+          onPress={state.params.toggleUsernameSearch}
+        /><Button
           title="Next"
           onPress={state.params.finalizeGroup}
-        /> : undefined
+        /></View> : undefined
       ),
     };
   };
@@ -176,13 +179,20 @@ class NewGroup extends Component {
       selected = this.props.navigation.state.params.selected;
     }
 
+    let usernameString = '';
+    if (this.props.navigation.state.params && this.props.navigation.state.params.usernameString) {
+      usernameString = this.props.navigation.state.params.usernameString;
+    }
+
     this.state = {
       selected: selected || [],
+      usernameString: usernameString || '',
       friends: props.user ?
         _.groupBy(props.user.friends, friend => friend.username.charAt(0).toUpperCase()) : [],
     };
 
     this.finalizeGroup = this.finalizeGroup.bind(this);
+    this.toggleUsernameSearch = this.toggleUsernameSearch.bind(this);
     this.isSelected = this.isSelected.bind(this);
     this.toggle = this.toggle.bind(this);
   }
@@ -205,20 +215,32 @@ class NewGroup extends Component {
       });
     }
 
+    if (nextProps.usernameString) {
+      Object.assign(state, {
+        usernameString: nextProps.usernameString,
+      });
+    }
+
     this.setState(state);
   }
 
   componentWillUpdate(nextProps, nextState) {
     if (!!this.state.selected.length !== !!nextState.selected.length) {
-      this.refreshNavigation(nextState.selected);
+      this.refreshNavigation({ selected: nextState.selected });
+    }
+    // TODO finish componnet lifecycle of controlled textinput for username search
+    if (!!this.state.searchResults.length !== !!nextState.searchResults.length) {
+      this.refreshNavigation({ searchResults: nextState.searchResults });
     }
   }
 
-  refreshNavigation(selected) {
+  refreshNavigation({ selected, searchResults }) {
     const { navigation } = this.props;
     navigation.setParams({
       mode: selected && selected.length ? 'ready' : undefined,
+      searchResults,
       finalizeGroup: this.finalizeGroup,
+      toggleUsernameSearch: this.toggleUsernameSearch,
     });
   }
 
@@ -227,6 +249,16 @@ class NewGroup extends Component {
     navigate('FinalizeGroup', {
       selected: this.state.selected,
       friendCount: this.props.user.friends.length,
+      userId: this.props.user.id,
+    });
+  }
+
+  toggleUsernameSearch() {
+    debugger;
+    const { navigate } = this.props.navigation;
+    navigate('UsernameSearch', {
+      // selected: this.state.selected,
+      usernameString: this.state.usernameString,
       userId: this.props.user.id,
     });
   }

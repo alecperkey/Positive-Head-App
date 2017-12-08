@@ -28,6 +28,12 @@ export const Schema = [`
     icon: File # group icon image
   }
 
+  # input for searching userss
+  input UsersSearchInput {
+    id: Int!
+    usernameString: String # at least 3 characters
+  }
+
   # input for updating groups
   input UpdateGroupInput {
     id: Int!
@@ -126,7 +132,7 @@ export const Schema = [`
     user(email: String, id: Int): User
 
     # Search all users by their username
-    users(usernameString: String, id: Int): [User]
+    users(id: Int, usernameString: String): [User]
 
     # Return messages sent by a user via userId
     # Return messages sent to a group via groupId

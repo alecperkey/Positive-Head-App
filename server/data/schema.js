@@ -92,8 +92,11 @@ export const Schema = [`
     badgeCount: Int # number of unread notifications
     email: String! # we will also require a unique email per user
     username: String # this is the name we'll show other users
+    firstName: String
+    lastName: String
     messages: [Message] # messages sent by user
     groups: [Group] # groups the user belongs to
+    tweets: [Tweet] # tweets the user authored
     friends: [User] # user's friends/contacts
     jwt: String # json web token for access
     registrationId: String
@@ -105,6 +108,14 @@ export const Schema = [`
     id: Int! # unique id for message
     to: Group! # group message was sent in
     from: User! # user who sent the message
+    text: String! # message text
+    createdAt: Date! # when message was created
+  }
+
+  # a message sent from a user to a group
+  type Tweet {
+    id: Int! # unique id for message
+    userId: User! # user who wrote the tweet
     text: String! # message text
     createdAt: Date! # when message was created
   }

@@ -30,6 +30,9 @@ export const Resolvers = {
     user(_, args, ctx) {
       return userLogic.query(_, args, ctx);
     },
+    // tweet(_, args, ctx) {
+    //   return tweetLogic.query(_, args, ctx);
+    // },
   },
   Mutation: {
     createMessage(_, args, ctx) {
@@ -39,6 +42,12 @@ export const Resolvers = {
           pubsub.publish(MESSAGE_ADDED_TOPIC, { [MESSAGE_ADDED_TOPIC]: message });
           return message;
         });
+    },
+    createGroup(_, args, ctx) {
+      return groupLogic.createGroup(_, args, ctx).then((group) => {
+        pubsub.publish(GROUP_ADDED_TOPIC, { [GROUP_ADDED_TOPIC]: group });
+        return group;
+      });
     },
     createGroup(_, args, ctx) {
       return groupLogic.createGroup(_, args, ctx).then((group) => {
@@ -177,6 +186,9 @@ export const Resolvers = {
     },
     groups(user, args, ctx) {
       return userLogic.groups(user, args, ctx);
+    },
+    tweets(user, args, ctx) {
+      return userLogic.tweets(user, args, ctx);
     },
     jwt(user, args, ctx) {
       return userLogic.jwt(user, args, ctx);

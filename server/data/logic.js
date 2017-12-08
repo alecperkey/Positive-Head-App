@@ -375,10 +375,10 @@ export const userLogic = {
   },
   tweets(user, args, ctx) {
     return getAuthenticatedUser(ctx).then((currentUser) => {
-      if (currentUser.id !== user.id) {
-        return Promise.reject('Unauthorized');
-      }
-      console.log('userLogic.tweets', user);
+      // TODO add logic to only return tweets if currentUser is following (and unblocked)
+      // if (currentUser.id !== user.id) {
+      //   return Promise.reject('Unauthorized');
+      // }
       return user.getTweets();
     });
   },
@@ -451,6 +451,27 @@ export const userLogic = {
       }
 
       return user.update(options);
+    });
+  },
+};
+
+export const usersLogic = {
+  query(_, args, ctx) {
+    return getAuthenticatedUser(ctx).then((user) => {
+      // must provide id of searching user in case certain user blocking him
+      if (user.id === args.id && args.usernameString.length >= 3) {
+        // TODO add filtering based on search string, privacy, etc
+        return User.findAll({
+          where: { 
+            username: {
+              $like: `%${args.usernameString}%`,
+            },
+          },
+          order: [['createdAt', 'DESC']],
+        });
+      }
+
+      return Promise.reject('Unauthorized/Invalid');
     });
   },
 };

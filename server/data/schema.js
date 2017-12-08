@@ -125,6 +125,9 @@ export const Schema = [`
     # Return a user by their email or id
     user(email: String, id: Int): User
 
+    # Search all users by their username
+    users(usernameString: String, id: Int): [User]
+
     # Return messages sent by a user via userId
     # Return messages sent to a group via groupId
     messages(groupId: Int, userId: Int): [Message]

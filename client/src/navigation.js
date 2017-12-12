@@ -188,6 +188,8 @@ const AppNavigator = StackNavigator({
               return navigation.navigate('NewTweet');
             } else if (navigation.state.index === 3) {
               return navigation.navigate('NewMessage');
+            } else if (navigation.state.index === 2) {
+              return navigation.navigate('UsernameSearch');
             }
             return navigation.navigate('Home');
           }
@@ -203,7 +205,10 @@ const AppNavigator = StackNavigator({
   GroupDetails: { screen: GroupDetails },
   NewGroup: { screen: NewGroup },
   FinalizeGroup: { screen: FinalizeGroup },
-  UsernameSearch: { screen: UsernameSearch },
+  UsernameSearch: {
+    screen: UsernameSearch,
+    
+  },
   NewTweet: {
     screen: NewTweetModal,
   },

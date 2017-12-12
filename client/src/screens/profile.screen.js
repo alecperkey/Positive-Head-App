@@ -59,6 +59,13 @@ class ProfileScreen extends Component {
 
   renderItem = ({ item }) => <FeedCard {...item} />;
 
+  renderPlaceholder = () => (
+    <FeedCard
+      placeholder
+      isLoaded={this.props.loading}
+    />
+  )
+
   render() {
     const { loading, user, networkStatus } = this.props;
 
@@ -67,7 +74,7 @@ class ProfileScreen extends Component {
       return (
         <FlatList
           data={[1, 2, 3]}
-          renderItem={this._renderPlaceholder}
+          renderItem={this.renderPlaceholder}
           keyExtractor={item => item}
           contentContainerStyle={{ alignSelf: 'stretch' }}
         />

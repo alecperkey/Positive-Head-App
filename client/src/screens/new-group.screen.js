@@ -179,14 +179,8 @@ class NewGroup extends Component {
       selected = this.props.navigation.state.params.selected;
     }
 
-    let usernameString = '';
-    if (this.props.navigation.state.params && this.props.navigation.state.params.usernameString) {
-      usernameString = this.props.navigation.state.params.usernameString;
-    }
-
     this.state = {
       selected: selected || [],
-      usernameString: usernameString || '',
       friends: props.user ?
         _.groupBy(props.user.friends, friend => friend.username.charAt(0).toUpperCase()) : [],
     };
@@ -215,32 +209,21 @@ class NewGroup extends Component {
       });
     }
 
-    if (nextProps.usernameString) {
-      Object.assign(state, {
-        usernameString: nextProps.usernameString,
-      });
-    }
-
     this.setState(state);
   }
 
   componentWillUpdate(nextProps, nextState) {
+    console.log('componentWillUpdate', nextProps, nextState);
     if (!!this.state.selected.length !== !!nextState.selected.length) {
-      this.refreshNavigation({ selected: nextState.selected });
-    }
-    // TODO finish componnet lifecycle of controlled textinput for username search
-    if (!!this.state.searchResults.length !== !!nextState.searchResults.length) {
-      this.refreshNavigation({ searchResults: nextState.searchResults });
+      this.refreshNavigation(nextState.selected);
     }
   }
 
-  refreshNavigation({ selected, searchResults }) {
+  refreshNavigation({ selected }) {
     const { navigation } = this.props;
     navigation.setParams({
       mode: selected && selected.length ? 'ready' : undefined,
-      searchResults,
       finalizeGroup: this.finalizeGroup,
-      toggleUsernameSearch: this.toggleUsernameSearch,
     });
   }
 
@@ -249,16 +232,6 @@ class NewGroup extends Component {
     navigate('FinalizeGroup', {
       selected: this.state.selected,
       friendCount: this.props.user.friends.length,
-      userId: this.props.user.id,
-    });
-  }
-
-  toggleUsernameSearch() {
-    debugger;
-    const { navigate } = this.props.navigation;
-    navigate('UsernameSearch', {
-      // selected: this.state.selected,
-      usernameString: this.state.usernameString,
       userId: this.props.user.id,
     });
   }

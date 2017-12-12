@@ -105,11 +105,13 @@ class UsernameSearch extends Component {
   constructor(props) {
     super(props);
 
-    const { selected, searchResults } = props.navigation.state.params;
+    // const { usernameString, searchResults } = props.navigation.state.params;
 
     this.state = {
-      selected,
-      searchResults,
+      // usernameString: usernameString || 'ell',
+      // searchResults: searchResults || [],
+      usernameString: 'ell',
+      searchResults: [],
     };
 
     // this.create = this.create.bind(this);
@@ -119,61 +121,49 @@ class UsernameSearch extends Component {
   }
 
   componentDidMount() {
-    this.refreshNavigation(this.state.selected.length && this.state.usernameString);
+    console.log('componentDidMount', this);
+    this.refreshNavigation(this.state.usernameString);
   }
 
+  componentWillReceiveProps(nextProps) {
+    // const state = {};
+
+    // // if (nextProps.usernameString) {
+    // //   console.log('nextProps', nextProps);
+    // //   Object.assign(state, {
+    // //     usernameString: nextProps.usernameString,
+    // //   });
+    // // }
+
+    // this.setState(state);
+  }
   componentWillUpdate(nextProps, nextState) {
-    if ((nextState.selected.length && nextState.usernameString) !==
-      (this.state.selected.length && this.state.usernameString)) {
-      this.refreshNavigation(nextState.selected.length && nextState.usernameString);
+    // TODO finish componnet lifecycle of controlled textinput for username search
+    // if (!!this.state.searchResults.length !== !!nextState.searchResults.length) {
+    //   this.refreshNavigation({ searchResults: nextState.searchResults });
+    // }
+    if (nextState.usernameString !== this.state.usernameString) {
+      this.refreshNavigation(nextState.usernameString);
     }
+    console.log('nextState', nextState);
   }
 
   pop() {
     this.props.navigation.goBack();
   }
 
-  // remove(user) {
-  //   const index = this.state.selected.indexOf(user);
-  //   if (~index) {
-  //     const selected = update(this.state.selected, { $splice: [[index, 1]] });
-  //     this.setState({
-  //       selected,
-  //     });
-  //   }
-  // }
-
-  // create() {
-  //   const { createGroup } = this.props;
-
-  //   createGroup({
-  //     name: this.state.name,
-  //     userIds: _.map(this.state.selected, 'id'),
-  //     icon: this.state.icon,
-  //   }).then((res) => {
-  //     this.props.navigation.dispatch(goToNewGroup(res.data.createGroup));
-  //   }).catch((error) => {
-  //     Alert.alert(
-  //       'Error Creating New Conversation',
-  //       error.message,
-  //       [
-  //         { text: 'OK', onPress: () => {} },
-  //       ],
-  //     );
-  //   });
-  // }
-
-  refreshNavigation(ready) {
+  refreshNavigation(usernameString) {
     const { navigation } = this.props;
     navigation.setParams({
-      mode: ready ? 'ready' : undefined,
-      // create: this.create,
+      mode: true ? 'ready' : undefined,
+      usernameString,
     });
   }
 
   render() {
     // const { friendCount } = this.props.navigation.state.params;
     // const { icon } = this.state;
+    const users = this.props.users ? this.props.users : [];
 
     return (
       <View style={styles.container}>
@@ -193,12 +183,12 @@ class UsernameSearch extends Component {
           </View>
         </View>
         <Text style={styles.participants}>
-          {`matches: ${this.state.searchResults.length}`.toUpperCase()}
+          {`matches: ${users.length}`.toUpperCase()}
         </Text>
         <View style={styles.selected}>
-          {this.state.searchResults.length ?
+          {users.length ?
             <SelectedUserList
-              data={this.state.selected}
+              data={users}
               remove={this.remove}
             /> : undefined}
         </View>
@@ -243,16 +233,23 @@ UsernameSearch.propTypes = {
 // });
 
 const usersQuery = graphql(USERS_QUERY, {
-  options: ownProps => ({
-    variables: {
-      id: 2,
-      // id: ownProps.navigation.state.params.userId,
-      // usernameString: ownProps.navigation.state.params.usernameString,
-      usernameString: 'ell',
-    },
-  }),
-  props: ({ data: { loading, user } }) => ({
-    loading, user,
+  options: (ownProps) => {
+    console.log(ownProps);
+    let usernameQuery =  (ownProps.navigation.state.params && ownProps.navigation.state.params.usernameString) 
+      ? ownProps.navigation.state.params.usernameString
+      : 'ell';
+    if (usernameQuery.length <= 2) { usernameQuery = 'ell'; }
+    return {
+      variables: {
+        id: 2,
+        // id: ownProps.navigation.state.params.userId,
+        // usernameString: ownProps.navigation.state.params.usernameString,
+        usernameString: usernameQuery,
+      },
+    };
+  },
+  props: ({ data: { loading, users } }) => ({
+    loading, users,
   }),
 });
 

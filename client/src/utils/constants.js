@@ -32,5 +32,8 @@ export const fakeAvatar = 'https://pbs.twimg.com/profile_images/8351447462176645
 // - more info:
 // https://docs.expo.io/versions/latest/guides/debugging.html#to-ensure-the-best-debugging-experience-first-change-your-host-type-in-xde-to-lan-or-localhost-if-you-use-tunnel-with-debugging-enabled-you-are-likely-to-experience-so-much-latency-that-your-app-is-unusable-while-here-also-ensure-that-development-mode-is-checked
 // https://github.com/react-community/create-react-native-app/issues/81
-// setx REACT_NATIVE_PACKAGER_HOSTNAME 192.168.1.2 /M
-export const REACT_NATIVE_PACKAGER_HOSTNAME = '192.168.1.80';
+// below are commands to set system and user level environmental variable. sometimes either one might be necessary
+// find with ipv4 addresss at 'ipconfig' 
+// setx REACT_NATIVE_PACKAGER_HOSTNAME 192.168.1.31 /M
+// set REACT_NATIVE_PACKAGER_HOSTNAME=192.168.1.31
+export const REACT_NATIVE_PACKAGER_HOSTNAME = '192.168.1.31';

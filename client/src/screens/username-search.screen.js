@@ -2,33 +2,21 @@ import { _ } from 'lodash';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Alert,
   Button,
-  Image,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { graphql, compose } from 'react-apollo';
+import AlphabetListView from 'react-native-alphabetlistview';
 import { NavigationActions } from 'react-navigation';
-import update from 'immutability-helper';
 import { connect } from 'react-redux';
-import ImagePicker from 'react-native-image-crop-picker';
-import { ReactNativeFile } from 'apollo-upload-client';
 
 import USERS_QUERY from '../graphql/users.query';
-import CREATE_GROUP_MUTATION from '../graphql/create-group.mutation';
 import SelectedUserList from '../components/selected-user-list.component';
-
-const goToNewGroup = group => NavigationActions.reset({
-  index: 1,
-  actions: [
-    NavigationActions.navigate({ routeName: 'Main' }),
-    NavigationActions.navigate({ routeName: 'Messages', params: { groupId: group.id, title: group.name, icon: group.icon } }),
-  ],
-});
+import UserListItem from '../components/user-list-item.component';
+import { sortObject } from '../utils/formatters';
 
 const styles = StyleSheet.create({
   container: {
@@ -87,6 +75,35 @@ const styles = StyleSheet.create({
   },
 });
 
+const SectionHeader = ({ title }) => {
+  // inline styles used for brevity, use a stylesheet when possible
+  const textStyle = {
+    textAlign: 'center',
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16,
+  };
+
+  const viewStyle = {
+    backgroundColor: '#ccc',
+  };
+  return (
+    <View style={viewStyle}>
+      <Text style={textStyle}>{title}</Text>
+    </View>
+  );
+};
+SectionHeader.propTypes = {
+  title: PropTypes.string,
+};
+
+const SectionItem = ({ title }) => (
+  <Text style={{ color: 'blue' }}>{title}</Text>
+);
+SectionItem.propTypes = {
+  title: PropTypes.string,
+};
+
 class UsernameSearch extends Component {
   static navigationOptions = ({ navigation }) => {
     const { state } = navigation;
@@ -108,14 +125,17 @@ class UsernameSearch extends Component {
     // const { usernameString, searchResults } = props.navigation.state.params;
 
     this.state = {
-      // usernameString: usernameString || 'ell',
-      // searchResults: searchResults || [],
-      usernameString: 'ell',
-      searchResults: [],
+      selected: [],
+      usernameSearch: '',
+      resultsLength: props.users ?
+        props.users.length : 0,
+      users: props.users ?
+        _.groupBy(props.users, user => user.username.charAt(0).toUpperCase()) : [],
     };
 
     // this.create = this.create.bind(this);
     this.pop = this.pop.bind(this);
+    this.isSelected = this.isSelected.bind(this);
     // this.remove = this.remove.bind(this);
     // this.getIcon = this.getIcon.bind(this);
   }
@@ -126,16 +146,16 @@ class UsernameSearch extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    // const state = {};
+    const state = {};
 
-    // // if (nextProps.usernameString) {
-    // //   console.log('nextProps', nextProps);
-    // //   Object.assign(state, {
-    // //     usernameString: nextProps.usernameString,
-    // //   });
-    // // }
+    if (nextProps.users && nextProps.users && nextProps.users !== this.props.users) {
+      state.resultsLength = nextProps.users.length;
+      state.users = sortObject(
+        _.groupBy(nextProps.users, user => user.username.charAt(0).toUpperCase()),
+      );
+    }
 
-    // this.setState(state);
+    this.setState(state);
   }
   componentWillUpdate(nextProps, nextState) {
     // TODO finish componnet lifecycle of controlled textinput for username search
@@ -160,10 +180,16 @@ class UsernameSearch extends Component {
     });
   }
 
+  isSelected(user) {
+    return ~this.state.selected.indexOf(user);
+  }
+
   render() {
     // const { friendCount } = this.props.navigation.state.params;
     // const { icon } = this.state;
-    const users = this.props.users ? this.props.users : [];
+    // const users = this.props.users ? this.props.users : [];
+    const users = this.state.users;
+    const resultsLength = this.state.resultsLength;
 
     return (
       <View style={styles.container}>
@@ -183,7 +209,7 @@ class UsernameSearch extends Component {
           </View>
         </View>
         <Text style={styles.participants}>
-          {`matches: ${users.length}`.toUpperCase()}
+          {`matches: ${resultsLength}`.toUpperCase()}
         </Text>
         <View style={styles.selected}>
           {users.length ?
@@ -191,6 +217,19 @@ class UsernameSearch extends Component {
               data={users}
               remove={this.remove}
             /> : undefined}
+          {_.keys(users).length ? <AlphabetListView
+            style={{ flex: 1 }}
+            data={users}
+            cell={UserListItem}
+            cellHeight={30}
+            cellProps={{
+              isSelected: this.isSelected,
+              toggle: this.toggle,
+            }}
+            sectionListItem={SectionItem}
+            sectionHeader={SectionHeader}
+            sectionHeaderHeight={22.5}
+          /> : undefined}
         </View>
       </View>
     );
@@ -237,8 +276,8 @@ const usersQuery = graphql(USERS_QUERY, {
     console.log(ownProps);
     let usernameQuery =  (ownProps.navigation.state.params && ownProps.navigation.state.params.usernameString) 
       ? ownProps.navigation.state.params.usernameString
-      : 'ell';
-    if (usernameQuery.length <= 2) { usernameQuery = 'ell'; }
+      : '';
+    if (usernameQuery.length <= 2) { usernameQuery = ''; }
     return {
       variables: {
         id: 2,

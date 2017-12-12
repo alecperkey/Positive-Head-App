@@ -4,6 +4,7 @@ import gql from 'graphql-tag';
 const USERS_QUERY = gql`
 query users($id: Int, $usernameString: String) {
     users(id: $id, usernameString: $usernameString) {
+      id
       username
       firstName
       lastName

@@ -459,10 +459,11 @@ export const usersLogic = {
   query(_, args, ctx) {
     return getAuthenticatedUser(ctx).then((user) => {
       // must provide id of searching user in case certain user blocking him
-      if (user.id === args.id && args.usernameString.length >= 3) {
+      // if (user.id === args.id && args.usernameString.length >= 3) {
+      if (user.id === args.id) {
         // TODO add filtering based on search string, privacy, etc
         return User.findAll({
-          where: { 
+          where: {
             username: {
               $like: `%${args.usernameString}%`,
             },

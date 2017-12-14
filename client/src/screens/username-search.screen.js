@@ -14,6 +14,7 @@ import { NavigationActions } from 'react-navigation';
 import { connect } from 'react-redux';
 
 import USERS_QUERY from '../graphql/users.query';
+import USER_QUERY from '../graphql/user.query';
 import SelectedUserList from '../components/selected-user-list.component';
 import UserListItem from '../components/user-list-item.component';
 import { sortObject } from '../utils/formatters';
@@ -126,18 +127,19 @@ class UsernameSearch extends Component {
 
     this.state = {
       selected: [],
-      usernameSearch: '',
+      usernameString: (props.navigation.state.params && props.navigation.state.params.usernameString)
+        ? props.navigation.state.params.usernameString
+        : '',
       resultsLength: props.users ?
         props.users.length : 0,
+      // TODO rename users prop to usernames for clarity
       users: props.users ?
         _.groupBy(props.users, user => user.username.charAt(0).toUpperCase()) : [],
     };
 
-    // this.create = this.create.bind(this);
     this.pop = this.pop.bind(this);
     this.isSelected = this.isSelected.bind(this);
-    // this.remove = this.remove.bind(this);
-    // this.getIcon = this.getIcon.bind(this);
+    this.handleCellSelect = this.handleCellSelect.bind(this);
   }
 
   componentDidMount() {
@@ -175,12 +177,22 @@ class UsernameSearch extends Component {
   refreshNavigation(usernameString) {
     const { navigation } = this.props;
     navigation.setParams({
-      mode: true ? 'ready' : undefined,
-      usernameString,
+      mode: (usernameString && usernameString.length >= 3) ? 'ready' : undefined,
+      handleUsernameSelect: this.handleUsernameSelect,
+    });
+  }
+
+  handleCellSelect(cell) {
+    const { navigate } = this.props.navigation;
+    navigate('UsernameProfile', {
+      selected: this.state.selected,
+      selectedUser: cell,
+      userId: this.props.user.id,
     });
   }
 
   isSelected(user) {
+    // if (~someStr.indexOf("a")) Found it
     return ~this.state.selected.indexOf(user);
   }
 
@@ -224,8 +236,8 @@ class UsernameSearch extends Component {
             cellHeight={30}
             cellProps={{
               isSelected: this.isSelected,
-              toggle: this.toggle,
             }}
+            onCellSelect={this.handleCellSelect}
             sectionListItem={SectionItem}
             sectionHeader={SectionHeader}
             sectionHeaderHeight={22.5}
@@ -240,41 +252,23 @@ UsernameSearch.propTypes = {
   navigation: PropTypes.shape({
     dispatch: PropTypes.func,
     goBack: PropTypes.func,
+    navigate: PropTypes.func,
+    setParams: PropTypes.func,
     state: PropTypes.shape({
       params: PropTypes.shape({
-        usernameString: PropTypes.string.isRequired,
+        usernameString: PropTypes.string,
       }),
     }),
   }),
+  user: PropTypes.shape({
+    id: PropTypes.number,
+  }),
 };
-
-// const createGroupMutation = graphql(CREATE_GROUP_MUTATION, {
-//   props: ({ ownProps, mutate }) => ({
-//     createGroup: group =>
-//       mutate({
-//         variables: { group },
-//         update: (store, { data: { createGroup } }) => {
-//           // Read the data from our cache for this query.
-//           const data = store.readQuery({ query: USER_QUERY, variables: { id: ownProps.auth.id } });
-
-//           // Add our message from the mutation to the end.
-//           data.user.groups.push(createGroup);
-
-//           // Write our data back to the cache.
-//           store.writeQuery({
-//             query: USER_QUERY,
-//             variables: { id: ownProps.auth.id },
-//             data,
-//           });
-//         },
-//       }),
-//   }),
-// });
 
 const usersQuery = graphql(USERS_QUERY, {
   options: (ownProps) => {
     console.log(ownProps);
-    let usernameQuery =  (ownProps.navigation.state.params && ownProps.navigation.state.params.usernameString) 
+    let usernameQuery = (ownProps.navigation.state.params && ownProps.navigation.state.params.usernameString)
       ? ownProps.navigation.state.params.usernameString
       : '';
     if (usernameQuery.length <= 2) { usernameQuery = ''; }
@@ -292,11 +286,20 @@ const usersQuery = graphql(USERS_QUERY, {
   }),
 });
 
-const mapStateToProps = ({ auth }) => ({
+const userQuery = graphql(USER_QUERY, {
+  options: ownProps => ({ variables: { id: ownProps.auth.id } }),
+  props: ({ data: { loading, user } }) => ({
+    loading, user,
+  }),
+});
+
+const mapStateToProps = ({ auth, nav }) => ({
   auth,
+  nav,
 });
 
 export default compose(
   connect(mapStateToProps),
+  userQuery,
   usersQuery,
 )(UsernameSearch);

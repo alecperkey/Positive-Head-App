@@ -6,6 +6,7 @@ import {
   Text,
   Image,
   View,
+  TouchableHighlight,
 } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -48,6 +49,7 @@ class UserListItem extends Component {
   constructor(props) {
     super(props);
     this.toggle = this.toggle.bind(this);
+    this.handleOnSelect = this.handleOnSelect.bind(this);
     this.state = {
       isSelected: props.isSelected(props.item),
     };
@@ -59,17 +61,27 @@ class UserListItem extends Component {
     });
   }
 
+  handleOnSelect() {
+    if (this.props.item) {
+      this.props.onSelect(this.props.item);
+    }
+  }
+
   toggle() {
-    this.props.toggle(this.props.item);
+    if (this.props.toggle) {
+      this.props.toggle(this.props.item);
+    }
   }
 
   render() {
     return (
       <View style={styles.cellContainer}>
-        <Image
-          style={styles.cellImage}
-          source={{ uri: 'https://reactjs.org/logo-og.png' }}
-        />
+        <TouchableHighlight onPress={this.handleOnSelect}>
+          <Image
+            style={styles.cellImage}
+            source={{ uri: 'https://reactjs.org/logo-og.png' }}
+          />
+        </TouchableHighlight>
         <Text style={styles.cellLabel}>{this.props.item.username}</Text>
         <View style={styles.checkButtonContainer}>
           <Icon.Button
@@ -89,11 +101,15 @@ class UserListItem extends Component {
 }
 
 UserListItem.propTypes = {
+  // used by username-search.screen
+  onSelect: PropTypes.func,
+  // used by new-group.screen
   isSelected: PropTypes.func,
   item: PropTypes.shape({
     username: PropTypes.string.isRequired,
   }).isRequired,
-  toggle: PropTypes.func.isRequired,
+  // used by new-group.screen
+  toggle: PropTypes.func,
 };
 
 export default UserListItem;

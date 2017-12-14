@@ -17,6 +17,7 @@ import Groups from './screens/groups.screen';
 import Messages from './screens/messages.screen';
 import FinalizeGroup from './screens/finalize-group.screen';
 import UsernameSearch from './screens/username-search.screen';
+import UsernameProfile from './screens/username-profile.screen';
 import GroupDetails from './screens/group-details.screen';
 import NewGroup from './screens/new-group.screen';
 import Signin from './screens/signin.screen';
@@ -207,7 +208,9 @@ const AppNavigator = StackNavigator({
   FinalizeGroup: { screen: FinalizeGroup },
   UsernameSearch: {
     screen: UsernameSearch,
-    
+  },
+  UsernameProfile: {
+    screen: UsernameProfile,
   },
   NewTweet: {
     screen: NewTweetModal,

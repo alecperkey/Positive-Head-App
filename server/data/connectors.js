@@ -42,6 +42,12 @@ const UserModel = db.define('user', {
 // users belong to multiple groups
 UserModel.belongsToMany(GroupModel, { through: 'GroupUser' });
 
+// users belong to multiple users as followers
+UserModel.belongsToMany(UserModel, { through: 'Followers', as: 'followers' });
+
+// users belong to multiple users as followeds
+UserModel.belongsToMany(UserModel, { through: 'Followeds', as: 'followeds' });
+
 // users belong to multiple users as friends
 UserModel.belongsToMany(UserModel, { through: 'Friends', as: 'friends' });
 
@@ -69,9 +75,9 @@ GroupModel.belongsToMany(UserModel, { through: 'GroupUser' });
 
 // create fake starter data
 const GROUPS = 4;
-const USERS_PER_GROUP = 10;
-const MESSAGES_PER_USER = 5;
-const TWEETS_PER_USER = 2;
+const USERS_PER_GROUP = 5;
+const MESSAGES_PER_USER = 1;
+const TWEETS_PER_USER = 1;
 faker.seed(123); // get consistent data every time we reload app
 
 // you don't need to stare at this code too hard
@@ -109,18 +115,29 @@ db.sync({ force: true }).then(() => _.times(GROUPS, () => GroupModel.create({
   }));
 })).then((userPromises) => {
   // make users friends with all users in the group
-  Promise.all(userPromises).then((users) => {
-    _.each(users, (current, i) => {
-      // create tweets for each user
+  Promise.all(userPromises).then((usersOfGroup) => {
+    _.each(usersOfGroup, (current, i) => {
+      // create N tweets for each user
       _.times(TWEETS_PER_USER, () => {
         current.createTweet({
           userId: current.id,
           text: faker.lorem.sentences(3),
         });
       });
-      _.each(users, (user, j) => {
+      // current user addFriend for each other user
+      _.each(usersOfGroup, (user, j) => {
         if (i !== j) {
           current.addFriend(user);
+        }
+      });
+      _.each(usersOfGroup, (user, j) => {
+        // current user gains a follower from group with 50% chance
+        if (i !== j && Math.random() < 0.5) {
+          current.addFollower(user);
+        }
+        // current user follows others in group with 50% chance
+        if (i !== j && Math.random() < 0.5) {
+          current.addFollowed(user);
         }
       });
     });

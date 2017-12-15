@@ -11,6 +11,7 @@ import { groupLogic, messageLogic, userLogic, usersLogic, tweetLogic } from './l
 
 const MESSAGE_ADDED_TOPIC = 'messageAdded';
 const GROUP_ADDED_TOPIC = 'groupAdded';
+const FOLLOWED_ADDED = 'followedAdded';
 
 export const Resolvers = {
   Date: GraphQLDate,
@@ -47,6 +48,13 @@ export const Resolvers = {
       return groupLogic.createGroup(_, args, ctx).then((group) => {
         pubsub.publish(GROUP_ADDED_TOPIC, { [GROUP_ADDED_TOPIC]: group });
         return group;
+      });
+    },
+    updateFollowed(_, args, ctx) {
+      return userLogic.updateFollowed(_, args, ctx).then((user) => {
+        console.log(user);
+        pubsub.publish(FOLLOWED_ADDED, { [FOLLOWED_ADDED]: user });
+        return user;
       });
     },
     deleteGroup(_, args, ctx) {
@@ -135,8 +143,21 @@ export const Resolvers = {
           return ctx.user.then((user) => {
             return Boolean(
               args.userId &&
+              // if user is within groupAddedUsers
               ~map(payload.groupAdded.users, 'id').indexOf(args.userId) &&
               user.id !== payload.groupAdded.users[0].id, // don't send to user creating group
+            );
+          });
+        },
+      ),
+    },
+    followedAdded: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(FOLLOWED_ADDED),
+        (payload, args, ctx) => {
+          return ctx.user.then((user) => {
+            return Boolean(
+              args.userId === payload.followedAdded.followedId,
             );
           });
         },
@@ -182,6 +203,12 @@ export const Resolvers = {
     },
     friends(user, args, ctx) {
       return userLogic.friends(user, args, ctx);
+    },
+    followeds(user, args, ctx) {
+      return userLogic.followeds(user, args, ctx);
+    },
+    followers(user, args, ctx) {
+      return userLogic.followers(user, args, ctx);
     },
     groups(user, args, ctx) {
       return userLogic.groups(user, args, ctx);

@@ -27,7 +27,7 @@ Header.propTypes = {
   onPress: PropTypes.func.isRequired,
 };
 
-class ProfileScreen extends Component {
+class UsernameProfile extends Component {
   static navigationOptions = {
     title: 'Chats',
   };
@@ -121,9 +121,15 @@ class ProfileScreen extends Component {
     // );
   }
 }
-ProfileScreen.propTypes = {
+UsernameProfile.propTypes = {
   navigation: PropTypes.shape({
     navigate: PropTypes.func,
+    state: PropTypes.shape({
+      params: PropTypes.shape({
+        selectedUser: PropTypes.object,
+        userId: PropTypes.number,
+      }),
+    }),
   }),
   loading: PropTypes.bool,
   networkStatus: PropTypes.number,
@@ -158,4 +164,4 @@ const mapStateToProps = ({ auth }) => ({
 export default compose(
   connect(mapStateToProps),
   userQuery,
-)(ProfileScreen);
+)(UsernameProfile);

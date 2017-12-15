@@ -365,6 +365,24 @@ export const userLogic = {
       return user.getFriends({ attributes: ['id', 'username'] });
     });
   },
+  followeds(user, args, ctx) {
+    return getAuthenticatedUser(ctx).then((currentUser) => {
+      if (currentUser.id !== user.id) {
+        return Promise.reject('Unauthorized');
+      }
+
+      return user.getFolloweds({ attributes: ['id', 'username'] });
+    });
+  },
+  followers(user, args, ctx) {
+    return getAuthenticatedUser(ctx).then((currentUser) => {
+      if (currentUser.id !== user.id) {
+        return Promise.reject('Unauthorized');
+      }
+
+      return user.getFollowers({ attributes: ['id', 'username'] });
+    });
+  },
   groups(user, args, ctx) {
     return getAuthenticatedUser(ctx).then((currentUser) => {
       if (currentUser.id !== user.id) {
@@ -420,19 +438,15 @@ export const userLogic = {
 
     return getAuthenticatedUser(ctx).then((user) => { // eslint-disable-line arrow-body-style
       const options = {};
-
       if (registrationId || registrationId === null) {
         options.registrationId = registrationId;
       }
-
       if (badgeCount || badgeCount === 0) {
         options.badgeCount = badgeCount;
       }
-
       if (username) {
         options.username = username;
       }
-
       if (avatar) {
         return uploadFile({
           file: avatar.path,
@@ -452,6 +466,18 @@ export const userLogic = {
 
       return user.update(options);
     });
+  },
+  updateFollowed(_, args, ctx) {
+    const { userId, followedId } = args.user;
+    return getAuthenticatedUser(ctx).then(user =>
+      User.findOne({ where: { id: followedId },
+      }).then(follower =>
+        user.addFollowed(follower),
+      ).then(() =>
+        User.findOne({ where: { id: user.id },
+        }).then(followedUser => followedUser),
+      ),
+    );
   },
 };
 

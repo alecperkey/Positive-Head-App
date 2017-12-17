@@ -34,7 +34,7 @@ export const Schema = [`
     userId: Int!
   }
 
-  # input for searching userss
+  # input for searching users
   input UsersSearchInput {
     id: Int!
     usernameString: String # at least 3 characters
@@ -168,7 +168,7 @@ export const Schema = [`
     # for any of the groups with one of these groupIds
     messageAdded(groupIds: [Int]): Message
     groupAdded(userId: Int): Group
-    followedAdded(userId: Int): User
+    followedAdded(userId: Int!, followedId: Int!): User
   }
   
   schema {

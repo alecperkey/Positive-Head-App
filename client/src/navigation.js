@@ -36,6 +36,7 @@ import ButtonHeader from './components/button-header.component';
 import { USER_QUERY } from './graphql/user.query';
 import MESSAGE_ADDED_SUBSCRIPTION from './graphql/message-added.subscription';
 import GROUP_ADDED_SUBSCRIPTION from './graphql/group-added.subscription';
+import FOLLOWED_ADDED_SUBSCRIPTION from './graphql/followed-added.subscription';
 import UPDATE_USER_MUTATION from './graphql/update-user.mutation';
 
 import { firebaseClient, wsClient } from './app';
@@ -296,6 +297,10 @@ class AppWithNavigationState extends Component {
       if (this.messagesSubscription) {
         this.messagesSubscription();
       }
+// todo finish here
+      if (this.subscribeToFolloweds) {
+        this.subscribeToFolloweds();
+      }
 
       // clear the event subscription
       if (this.reconnected) {
@@ -358,6 +363,7 @@ AppWithNavigationState.propTypes = {
   refetch: PropTypes.func,
   subscribeToGroups: PropTypes.func,
   subscribeToMessages: PropTypes.func,
+  subscribeToFolloweds: PropTypes.func,
   updateUser: PropTypes.func,
   user: PropTypes.shape({
     id: PropTypes.number.isRequired,
@@ -434,6 +440,21 @@ const userQuery = graphql(USER_QUERY, {
           return update(previousResult, {
             user: {
               groups: { $push: [newGroup] },
+            },
+          });
+        },
+      });
+    },
+    subscribeToFolloweds() {
+      return subscribeToMore({
+        document: FOLLOWED_ADDED_SUBSCRIPTION,
+        variables: { userId: user.id },
+        updateQuery: (previousResult, { subscriptionData }) => {
+          const newFollowed = subscriptionData.data.followedAdded;
+
+          return update(previousResult, {
+            user: {
+              followeds: { $push: [newFollowed] },
             },
           });
         },

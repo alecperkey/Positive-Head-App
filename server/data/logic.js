@@ -469,16 +469,30 @@ export const userLogic = {
   },
   updateFollowed(_, args, ctx) {
     const { userId, followedId } = args.user;
-    return getAuthenticatedUser(ctx).then(user =>
-      User.findOne({ where: { id: followedId },
-      }).then(follower =>
-        user.addFollowed(follower),
-      ).then(() =>
-        User.findOne({ where: { id: user.id },
-        }).then(followedUser => followedUser),
-      ),
-    );
+    return getAuthenticatedUser(ctx).then((user) => { // eslint-disable-line arrow-body-style
+      return User.findOne({ where: { id: followedId },
+      }).then((follower) => {
+        return user.addFollowed(follower);
+      }).then(() => {
+        return User.findOne({ where: { id: user.id },
+        }).then((followedUser) => {
+          return followedUser;
+        });
+      });
+    });
   },
+  // updateFollower(_, args, ctx) {
+  //   const { userId, followedId } = args.user;
+  //   return getAuthenticatedUser(ctx).then(user =>
+  //     User.findOne({ where: { id: followedId },
+  //     }).then(follower =>
+  //       user.addFollowed(follower),
+  //     ).then(() =>
+  //       User.findOne({ where: { id: user.id },
+  //       }).then(followedUser => followedUser),
+  //     ),
+  //   );
+  // },
 };
 
 export const usersLogic = {
@@ -511,6 +525,17 @@ export const subscriptionLogic = {
           return Promise.reject('Unauthorized');
         }
 
+        baseParams.context = ctx;
+        return baseParams;
+      });
+  },
+  followedAdded(baseParams, args, ctx) {
+    return getAuthenticatedUser(ctx)
+      .then((user) => {
+        if (user.id !== args.userId) {
+          return Promise.reject('Unauthorized');
+        }
+        console.log('##########  followedAdded  ##########');
         baseParams.context = ctx;
         return baseParams;
       });

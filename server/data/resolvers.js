@@ -52,7 +52,7 @@ export const Resolvers = {
     },
     updateFollowed(_, args, ctx) {
       return userLogic.updateFollowed(_, args, ctx).then((user) => {
-        console.log(user);
+        // returning the currentuser, not the newly followed user...
         pubsub.publish(FOLLOWED_ADDED, { [FOLLOWED_ADDED]: user });
         return user;
       });
@@ -156,6 +156,12 @@ export const Resolvers = {
         () => pubsub.asyncIterator(FOLLOWED_ADDED),
         (payload, args, ctx) => {
           return ctx.user.then((user) => {
+            console.log('##########  user  ##########');
+            console.log(user);
+            console.log('##########  args  ##########');
+            console.log(args);
+            console.log('##########  payload  ##########');
+            console.log(payload);
             return Boolean(
               args.userId === payload.followedAdded.followedId,
             );

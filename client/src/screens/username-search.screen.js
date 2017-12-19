@@ -114,7 +114,7 @@ class UsernameSearch extends Component {
       headerRight: (
         isReady ? <Button
           title="Create"
-          onPress={state.params.create}
+          onPress={() => 'onpress'}
         /> : undefined
       ),
     };

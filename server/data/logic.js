@@ -470,11 +470,13 @@ export const userLogic = {
   updateFollowed(_, args, ctx) {
     const { userId, followedId } = args.user;
     return getAuthenticatedUser(ctx).then((user) => { // eslint-disable-line arrow-body-style
-      return User.findOne({ where: { id: followedId },
+      return User.findOne({
+        where: { id: followedId },
       }).then((follower) => {
         return user.addFollowed(follower);
       }).then(() => {
-        return User.findOne({ where: { id: user.id },
+        return User.findOne({
+          where: { id: user.id },
         }).then((followedUser) => {
           return followedUser;
         });
@@ -511,7 +513,7 @@ export const usersLogic = {
           order: [['createdAt', 'DESC']],
         });
       }
-
+      // TODO send back empty array? No results come unless the usernameString is defined
       return Promise.reject('Unauthorized/Invalid');
     });
   },

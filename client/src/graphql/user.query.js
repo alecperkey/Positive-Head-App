@@ -32,6 +32,10 @@ export const USER_QUERY = gql`
         id
         username
       }
+      followeds {
+        id
+        username
+      }
       tweets {
         id
         text

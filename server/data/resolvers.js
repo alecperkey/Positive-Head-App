@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import { Group, Message, User, Tweet } from './connectors';
 import { pubsub } from '../subscriptions';
 import { JWT_SECRET } from '../config';
-import { groupLogic, messageLogic, userLogic, usersLogic, tweetLogic } from './logic';
+import { groupLogic, messageLogic, userLogic, usersLogic, usernameLogic, tweetLogic } from './logic';
 
 const MESSAGE_ADDED_TOPIC = 'messageAdded';
 const GROUP_ADDED_TOPIC = 'groupAdded';
@@ -33,6 +33,9 @@ export const Resolvers = {
     },
     users(_, args, ctx) {
       return usersLogic.query(_, args, ctx);
+    },
+    username(_, args, ctx) {
+      return usernameLogic.query(_, args, ctx);
     },
   },
   Mutation: {

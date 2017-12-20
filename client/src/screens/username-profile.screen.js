@@ -1,3 +1,4 @@
+import { _ } from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import styled from 'styled-components/native';
@@ -8,7 +9,8 @@ import { FlatList } from 'react-native';
 import ProfileHeader from '../components/profile-header.component';
 import FeedCard from '../components/feedcard/feedcard.component';
 
-import { USER_QUERY } from '../graphql/user.query';
+// import { USER_QUERY } from '../graphql/user.query';
+import { USERNAME_QUERY } from '../graphql/username.query';
 
 
 const Root = styled.View`
@@ -29,7 +31,7 @@ Header.propTypes = {
 
 class UsernameProfile extends Component {
   static navigationOptions = {
-    title: 'Chats',
+    title: 'Username Profile',
   };
 
   constructor(props) {
@@ -37,7 +39,7 @@ class UsernameProfile extends Component {
     this.goToMessages = this.goToMessages.bind(this);
     this.goToNewGroup = this.goToNewGroup.bind(this);
     this.onRefresh = this.onRefresh.bind(this);
-    debugger;
+    // props.navigation.state.params.selectedUser
   }
 
   onRefresh() {
@@ -47,15 +49,15 @@ class UsernameProfile extends Component {
 
   keyExtractor = item => item.id;
 
-  goToMessages(group) {
-    const { navigate } = this.props.navigation;
-    navigate('Messages', { groupId: group.id, title: group.name, icon: group.icon });
-  }
+  // goToMessages(group) {
+  //   const { navigate } = this.props.navigation;
+  //   navigate('Messages', { groupId: group.id, title: group.name, icon: group.icon });
+  // }
 
-  goToNewGroup() {
-    const { navigate } = this.props.navigation;
-    navigate('NewGroup');
-  }
+  // goToNewGroup() {
+  //   const { navigate } = this.props.navigation;
+  //   navigate('NewGroup');
+  // }
 
 
   renderItem = ({ item }) => <FeedCard {...item} />;
@@ -68,10 +70,13 @@ class UsernameProfile extends Component {
   )
 
   render() {
-    const { loading, user, networkStatus } = this.props;
-
+    const { loading, username, networkStatus } = this.props;
+    const selectedUser = this.props.navigation.state.params.selectedUser || null;
+    console.log('selectedUser', selectedUser);
+    // TODO determine, add follow button, add follow 
+    // const userIsFollowing = _.find(user.followings, { id: user.id })
     // render loading placeholder while we fetch messages
-    if (loading || !user) {
+    if (loading || !username) {
       return (
         <FlatList
           data={[1, 2, 3]}
@@ -81,28 +86,22 @@ class UsernameProfile extends Component {
         />
       );
     }
-
-    if (user && !user.tweets.length) {
-      return (
-        <View style={styles.container}>
-          <Header onPress={this.goToNewGroup} />
-          <Text style={styles.warning}>{'You do not have any posts.'}</Text>
-        </View>
-      );
-    }
-
-    console.log('user', user);
-
+    
+    debugger;
+    const usernameIsFollowed = _.has(username.followeds, { id: selectedUser.id });
+    const usernameIsFollowing = true; //TODO show 'follows you' 
+    const renderFollowButton = ({onPress}) => <Button title={'Follow'} onPress={onPress} />;
     // render list of posts (tweets) for user
+    const toggleFollowed = ({usernameIsFollowed}) => 
     return (
       <Root>
-        <ProfileHeader {...user} />
-        <FlatList
-          data={user.tweets}
+        <ProfileHeader {...username usernameIsFollowed toggleFollow} />
+        {usernameIsFollowed ? <FlatList
+          data={username.tweets}
           renderItem={this.renderItem}
           keyExtractor={this.keyExtractor}
           contentContainerStyle={{ alignSelf: 'stretch' }}
-        />
+        /> : undefined}
       </Root>
     );
 
@@ -149,11 +148,23 @@ UsernameProfile.propTypes = {
   }),
 };
 
-const userQuery = graphql(USER_QUERY, {
-  skip: ownProps => !ownProps.auth || !ownProps.auth.jwt,
-  options: ownProps => ({ variables: { id: ownProps.auth.id } }),
-  props: ({ data: { loading, networkStatus, refetch, user } }) => ({
-    loading, networkStatus, refetch, user,
+// const userQuery = graphql(USER_QUERY, {
+//   skip: ownProps => !ownProps.auth || !ownProps.auth.jwt,
+//   options: ownProps => ({ variables: { id: ownProps.auth.id } }),
+//   props: ({ userData: { loading, networkStatus, refetch, user } }) => ({
+//     loading, networkStatus, refetch, user,
+//   }),
+//   name: 'userData',
+// });
+
+const usernameQuery = graphql(USERNAME_QUERY, {
+  skip: ownProps => !ownProps.auth || !ownProps.auth.jwt ||
+   !ownProps.navigation || !ownProps.navigation.state || 
+   !ownProps.navigation.state.params || !ownProps.navigation.state.params.selectedUser ||
+   !ownProps.navigation.state.params.selectedUser.id,
+  options: ownProps => ({ variables: { id: ownProps.auth.id, usernameId: ownProps.navigation.state.params.selectedUser.id } }),
+  props: ({ data: { loading, networkStatus, refetch, username } }) => ({
+    loading, networkStatus, refetch, username,
   }),
 });
 
@@ -163,5 +174,6 @@ const mapStateToProps = ({ auth }) => ({
 
 export default compose(
   connect(mapStateToProps),
-  userQuery,
+  usernameQuery,
+  // userQuery,
 )(UsernameProfile);

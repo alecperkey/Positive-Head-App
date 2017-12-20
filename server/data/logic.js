@@ -367,18 +367,20 @@ export const userLogic = {
   },
   followeds(user, args, ctx) {
     return getAuthenticatedUser(ctx).then((currentUser) => {
-      if (currentUser.id !== user.id) {
-        return Promise.reject('Unauthorized');
-      }
+      // TODO add privacy logic 
+      // if (currentUser.id !== user.id) {
+      //   return Promise.reject('Unauthorized');
+      // }
 
       return user.getFolloweds({ attributes: ['id', 'username'] });
     });
   },
   followers(user, args, ctx) {
     return getAuthenticatedUser(ctx).then((currentUser) => {
-      if (currentUser.id !== user.id) {
-        return Promise.reject('Unauthorized');
-      }
+      // TODO add privacy logic 
+      // if (currentUser.id !== user.id) {
+      //   return Promise.reject('Unauthorized');
+      // }
 
       return user.getFollowers({ attributes: ['id', 'username'] });
     });
@@ -471,14 +473,21 @@ export const userLogic = {
     const { userId, followedId } = args.user;
     return getAuthenticatedUser(ctx).then((user) => { // eslint-disable-line arrow-body-style
       return User.findOne({
-        where: { id: followedId },
-      }).then((follower) => {
-        return user.addFollowed(follower);
-      }).then(() => {
-        return User.findOne({
-          where: { id: user.id },
-        }).then((followedUser) => {
-          return followedUser;
+        where: { id: followedId }
+      }).then((followedUser) => {
+        // check if already followed
+        // https://stackoverflow.com/a/35013525/1289188
+        return user.hasFollowed(followedUser).then((hasAlreadyFollowed) => {
+          if (hasAlreadyFollowed) {
+            return user.removeFollowed(followedUser);
+          }
+          return user.addFollowed(followedUser);
+        }).then(() => {
+          return User.findOne({
+            where: { id: user.id },
+          }).then((updatedUser) => {
+            return updatedUser;
+          });
         });
       });
     });
@@ -515,6 +524,22 @@ export const usersLogic = {
       }
       // TODO send back empty array? No results come unless the usernameString is defined
       return Promise.reject('Unauthorized/Invalid');
+    });
+  },
+};
+
+export const usernameLogic = {
+  query(_, args, ctx) {
+    return getAuthenticatedUser(ctx).then((currentUser) => {
+      if (currentUser.id === args.id) {
+        return User.findOne({
+          where: { id: args.usernameId },
+        }).then((username) => {
+          return username;
+        });
+      }
+
+      return Promise.reject('Unauthorized');
     });
   },
 };

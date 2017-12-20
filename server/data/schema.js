@@ -138,6 +138,9 @@ export const Schema = [`
   type Query {
     # Return a user by their email or id
     user(email: String, id: Int): User
+  
+    # Return another user by their email or id
+    username(id: Int, usernameId: Int): User
 
     # Search all users by their username
     users(id: Int, usernameString: String): [User]

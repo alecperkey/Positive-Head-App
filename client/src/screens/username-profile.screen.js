@@ -4,13 +4,18 @@ import React, { Component } from 'react';
 import styled from 'styled-components/native';
 import { connect } from 'react-redux';
 import { graphql, compose } from 'react-apollo';
-import { FlatList } from 'react-native';
+import {
+  FlatList,
+  View,
+  Button,
+} from 'react-native';
 
 import ProfileHeader from '../components/profile-header.component';
 import FeedCard from '../components/feedcard/feedcard.component';
 
 // import { USER_QUERY } from '../graphql/user.query';
 import { USERNAME_QUERY } from '../graphql/username.query';
+import { UPDATE_FOLLOWED_MUTATION } from '../graphql/update-followed.mutation';
 
 
 const Root = styled.View`
@@ -36,9 +41,10 @@ class UsernameProfile extends Component {
 
   constructor(props) {
     super(props);
-    this.goToMessages = this.goToMessages.bind(this);
-    this.goToNewGroup = this.goToNewGroup.bind(this);
+    // this.goToMessages = this.goToMessages.bind(this);
+    // this.goToNewGroup = this.goToNewGroup.bind(this);
     this.onRefresh = this.onRefresh.bind(this);
+    // this.updateFollowed = this.updateFollowed.bind(this);
     // props.navigation.state.params.selectedUser
   }
 
@@ -59,6 +65,10 @@ class UsernameProfile extends Component {
   //   navigate('NewGroup');
   // }
 
+  // updateFollowed() {
+  //   this.props.updateFollowed({ username, avatar }).then(({ data: { updateFollowed } }) => {
+  //   });
+  // }
 
   renderItem = ({ item }) => <FeedCard {...item} />;
 
@@ -70,7 +80,7 @@ class UsernameProfile extends Component {
   )
 
   render() {
-    const { loading, username, networkStatus } = this.props;
+    const { loading, username, networkStatus, updateFollowed } = this.props;
     const selectedUser = this.props.navigation.state.params.selectedUser || null;
     console.log('selectedUser', selectedUser);
     // TODO determine, add follow button, add follow 
@@ -87,15 +97,19 @@ class UsernameProfile extends Component {
       );
     }
     
-    debugger;
     const usernameIsFollowed = _.has(username.followeds, { id: selectedUser.id });
     const usernameIsFollowing = true; //TODO show 'follows you' 
-    const renderFollowButton = ({onPress}) => <Button title={'Follow'} onPress={onPress} />;
+    // const renderFollowButton = ({onPress}) => <Button title={'Follow'} onPress={onPress} />;
     // render list of posts (tweets) for user
-    const toggleFollowed = ({usernameIsFollowed}) => 
+    // const toggleFollowed = ({usernameIsFollowed}) => 
+    debugger;
     return (
       <Root>
-        <ProfileHeader {...username usernameIsFollowed toggleFollow} />
+        <ProfileHeader
+          {...username} 
+          usernameIsFollowed={usernameIsFollowed}
+          updateFollowed={updateFollowed}
+        />
         {usernameIsFollowed ? <FlatList
           data={username.tweets}
           renderItem={this.renderItem}
@@ -168,12 +182,31 @@ const usernameQuery = graphql(USERNAME_QUERY, {
   }),
 });
 
+const updateFollowedMutation = graphql(UPDATE_FOLLOWED_MUTATION, {
+  skip: ownProps => !ownProps.auth || !ownProps.auth.jwt ||
+  !ownProps.navigation || !ownProps.navigation.state || 
+  !ownProps.navigation.state.params || !ownProps.navigation.state.params.selectedUser ||
+  !ownProps.navigation.state.params.selectedUser.id,
+  props: ({ ownProps, mutate }) => ({
+    updateFollowed: () =>
+      mutate({
+        variables: {
+          user: {
+            userId: ownProps.auth.id,
+            followedId: ownProps.navigation.state.params.selectedUser.id
+          },
+        },
+      }),
+  }),
+});
+
 const mapStateToProps = ({ auth }) => ({
   auth,
 });
 
 export default compose(
   connect(mapStateToProps),
+  updateFollowedMutation,
   usernameQuery,
   // userQuery,
 )(UsernameProfile);

@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 
-const UPDATE_FOLLOWED_MUTATION = gql`
+export const UPDATE_FOLLOWED_MUTATION = gql`
   mutation updateFollowed($user: UpdateFollowedInput!) {
     updateFollowed(user: $user) {
       id

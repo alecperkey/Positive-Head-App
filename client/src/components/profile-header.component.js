@@ -1,12 +1,13 @@
 import React from 'react';
 import styled from 'styled-components/native';
+import Touchable from '@appandflow/touchable';
 
 const AVATAR_SIZE = 60;
 
 const Root = styled.View`
-  height: 140;
+  height: 210;
   alignSelf: stretch;
-  paddingTop: 50;
+  paddingTop: 10;
   backgroundColor: ${props => props.theme.WHITE};
 `;
 
@@ -24,6 +25,8 @@ const Avatar = styled.Image`
   width: ${AVATAR_SIZE};
   borderRadius: ${AVATAR_SIZE / 2};
   backgroundColor: yellow;
+  borderColor: ${props => props.theme.SECONDARY};
+  borderWidth: 1;
 `;
 
 const UsernameContainer = styled.View`
@@ -46,7 +49,33 @@ const UserName = styled.Text`
 
 const MetaContainer = styled.View`
   flex: 0.8;
+  flexDirection: column;
+`;
+
+const TopMetaContainer = styled.View`
+  flex: 0.6;
   flexDirection: row;
+`;
+
+const BottomMetaContainer = styled.View`
+  flex: 0.4;
+  flexDirection: row;
+`;
+
+const Button = styled(Touchable).attrs({
+  feedback: 'opacity',
+})`
+  flex: 1;
+  flexDirection: row;
+  alignItems: center;
+  justifyContent: space-around;
+  paddingHorizontal: 60px;
+`;
+
+const ButtonText = styled.Text`
+  fontSize: 14;
+  fontWeight: 500;
+  color: ${props => props.theme.LIGHT_GRAY};
 `;
 
 const MetaBox = styled.View`
@@ -55,45 +84,69 @@ const MetaBox = styled.View`
   alignItems: center;
 `;
 
-const MetaText = styled.Text`
-  color: ${props => props.theme.SECONDARY};
-  fontSize: 16;
-  fontWeight: 400;
+const MetaTextContainer = styled.View`
+  flex: 1;
+  flexDirection: column;
 `;
 
-const MetaTextNumber = styled.Text`color: ${props => props.theme.PRIMARY};`;
+const MetaTextNumber = styled.Text`
+  fontWeight: 600;
+  fontSize: 16;
+  color: ${props => props.theme.SECONDARY};
+`;
 
-export default function ProfileHeader({ firstName, lastName, avatar, username}) {
+const MetaTextLabel = styled.Text`
+  fontSize: 12;
+  fontWeight: 400;
+  color: ${props => props.theme.LIGHT_GRAY};
+`;
+
+export default function ProfileHeader({ firstName, lastName, avatar, username, followeds, followers, usernameIsFollowed, updateFollowed }) {
   return (
     <Root>
       <Heading>
         <Avatar source={{ uri: avatar }} />
-        <UsernameContainer>
-          <FullName>
-            {firstName} {lastName}
-          </FullName>
-          <UserName>
-            @{username}
-          </UserName>
-        </UsernameContainer>
+        <MetaContainer>
+          <TopMetaContainer>
+            <MetaBox>
+              <MetaTextContainer>
+                <MetaTextNumber>314</MetaTextNumber>
+                <MetaTextLabel>posts</MetaTextLabel>
+              </MetaTextContainer>
+            </MetaBox>
+            <MetaBox>
+              <MetaTextContainer>
+                <MetaTextNumber>{(followeds) ? followeds.length : 0}</MetaTextNumber>
+                <MetaTextLabel>following</MetaTextLabel>
+              </MetaTextContainer>
+            </MetaBox>
+            <MetaBox>
+              <MetaTextContainer>
+                <MetaTextNumber>{(followers) ? followers.length : 0}</MetaTextNumber>
+                <MetaTextLabel>followers</MetaTextLabel>
+              </MetaTextContainer>
+            </MetaBox>
+          </TopMetaContainer>
+          <BottomMetaContainer>
+            <MetaBox>
+              <Button onPress={updateFollowed}>
+                <ButtonText>
+                  { (usernameIsFollowed) ? 'Unfollow' : 'Follow' }
+                </ButtonText>
+              </Button>
+            </MetaBox>
+          </BottomMetaContainer>
+
+        </MetaContainer>
       </Heading>
-      <MetaContainer>
-        <MetaBox>
-          <MetaText>
-            <MetaTextNumber>314</MetaTextNumber> posts
-          </MetaText>
-        </MetaBox>
-        <MetaBox>
-          <MetaText>
-            <MetaTextNumber>2053</MetaTextNumber> favorites
-          </MetaText>
-        </MetaBox>
-        <MetaBox>
-          <MetaText>
-            <MetaTextNumber>45</MetaTextNumber> connections
-          </MetaText>
-        </MetaBox>
-      </MetaContainer>
+      <UsernameContainer>
+        <FullName>
+          {firstName} {lastName}
+        </FullName>
+        <UserName>
+          @{username}
+        </UserName>
+      </UsernameContainer>
     </Root>
   );
 }

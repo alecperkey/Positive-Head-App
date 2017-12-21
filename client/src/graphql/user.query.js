@@ -10,6 +10,8 @@ export const USER_QUERY = gql`
       avatar
       badgeCount
       email
+      firstName
+      lastName
       registrationId
       username
       groups {
@@ -29,6 +31,22 @@ export const USER_QUERY = gql`
       friends {
         id
         username
+      }
+      followeds {
+        id
+        username
+      }
+      tweets {
+        id
+        text
+        createdAt
+        author {
+          id
+          username
+          firstName
+          lastName
+          avatar
+        }
       }
     }
   }

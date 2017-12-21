@@ -92,7 +92,7 @@ class FinalizeGroup extends Component {
     const { state } = navigation;
     const isReady = state.params && state.params.mode === 'ready';
     return {
-      title: 'New Group',
+      title: 'New Conversation',
       headerRight: (
         isReady ? <Button
           title="Create"
@@ -173,7 +173,7 @@ class FinalizeGroup extends Component {
       this.props.navigation.dispatch(goToNewGroup(res.data.createGroup));
     }).catch((error) => {
       Alert.alert(
-        'Error Creating New Group',
+        'Error Creating New Conversation',
         error.message,
         [
           { text: 'OK', onPress: () => {} },

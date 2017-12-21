@@ -4,13 +4,14 @@ import { map } from 'lodash';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-import { Group, Message, User } from './connectors';
+import { Group, Message, User, Tweet } from './connectors';
 import { pubsub } from '../subscriptions';
 import { JWT_SECRET } from '../config';
-import { groupLogic, messageLogic, userLogic } from './logic';
+import { groupLogic, messageLogic, userLogic, usersLogic, usernameLogic, tweetLogic } from './logic';
 
 const MESSAGE_ADDED_TOPIC = 'messageAdded';
 const GROUP_ADDED_TOPIC = 'groupAdded';
+const FOLLOWED_ADDED = 'followedAdded';
 
 export const Resolvers = {
   Date: GraphQLDate,
@@ -30,6 +31,12 @@ export const Resolvers = {
     user(_, args, ctx) {
       return userLogic.query(_, args, ctx);
     },
+    users(_, args, ctx) {
+      return usersLogic.query(_, args, ctx);
+    },
+    username(_, args, ctx) {
+      return usernameLogic.query(_, args, ctx);
+    },
   },
   Mutation: {
     createMessage(_, args, ctx) {
@@ -44,6 +51,13 @@ export const Resolvers = {
       return groupLogic.createGroup(_, args, ctx).then((group) => {
         pubsub.publish(GROUP_ADDED_TOPIC, { [GROUP_ADDED_TOPIC]: group });
         return group;
+      });
+    },
+    updateFollowed(_, args, ctx) {
+      return userLogic.updateFollowed(_, args, ctx).then((user) => {
+        // returning the currentuser, not the newly followed user...
+        pubsub.publish(FOLLOWED_ADDED, { [FOLLOWED_ADDED]: user });
+        return user;
       });
     },
     deleteGroup(_, args, ctx) {
@@ -132,8 +146,27 @@ export const Resolvers = {
           return ctx.user.then((user) => {
             return Boolean(
               args.userId &&
+              // if user is within groupAddedUsers
               ~map(payload.groupAdded.users, 'id').indexOf(args.userId) &&
               user.id !== payload.groupAdded.users[0].id, // don't send to user creating group
+            );
+          });
+        },
+      ),
+    },
+    followedAdded: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(FOLLOWED_ADDED),
+        (payload, args, ctx) => {
+          return ctx.user.then((user) => {
+            console.log('##########  user  ##########');
+            console.log(user);
+            console.log('##########  args  ##########');
+            console.log(args);
+            console.log('##########  payload  ##########');
+            console.log(payload);
+            return Boolean(
+              args.userId === payload.followedAdded.followedId,
             );
           });
         },
@@ -165,6 +198,11 @@ export const Resolvers = {
       return messageLogic.from(message, args, ctx);
     },
   },
+  Tweet: {
+    author(tweet, args, ctx) {
+      return tweetLogic.author(tweet, args, ctx);
+    }
+  },
   User: {
     avatar(user, args, ctx) {
       return userLogic.avatar(user, args, ctx);
@@ -175,8 +213,17 @@ export const Resolvers = {
     friends(user, args, ctx) {
       return userLogic.friends(user, args, ctx);
     },
+    followeds(user, args, ctx) {
+      return userLogic.followeds(user, args, ctx);
+    },
+    followers(user, args, ctx) {
+      return userLogic.followers(user, args, ctx);
+    },
     groups(user, args, ctx) {
       return userLogic.groups(user, args, ctx);
+    },
+    tweets(user, args, ctx) {
+      return userLogic.tweets(user, args, ctx);
     },
     jwt(user, args, ctx) {
       return userLogic.jwt(user, args, ctx);

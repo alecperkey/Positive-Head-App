@@ -2,7 +2,7 @@ import { map, filter } from 'lodash';
 import uuidv4 from 'uuid/v4';
 import mime from 'mime-types';
 
-import { Group, Message, User } from './connectors';
+import { Group, Message, User, Tweet } from './connectors';
 import { sendNotification } from '../notifications';
 import { uploadFile, deleteFile, getFileUrl, getSignedFileUrl } from '../files';
 
@@ -47,16 +47,36 @@ export const messageLogic = {
                 Promise.all(userPromises).then((updatedUsers) => {
                   const registeredUsers = filter(updatedUsers, usr => usr.registrationId);
                   if (registeredUsers.length) {
+                    // registeredUsers.forEach(({ badgeCount, registrationId }) => sendNotification({
+                    //   to: registrationId,
+                    //   notification: {
+                    //     title: `${user.username} @ ${group.name}`,
+                    //     body: text,
+                    //     sound: 'default', // can use custom sounds -- see https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/SupportingNotificationsinYourApp.html#//apple_ref/doc/uid/TP40008194-CH4-SW10
+                    //     badge: badgeCount + 1, // badgeCount doesn't get updated in Promise return?!
+                    //     click_action: 'openGroup',
+                    //   },
+                    //   data: {
+                    //     title: `${user.username} @ ${group.name}`,
+                    //     body: text,
+                    //     type: 'MESSAGE_ADDED',
+                    //     group: {
+                    //       id: group.id,
+                    //       name: group.name,
+                    //     },
+                    //   },
+                    //   priority: 'high', // will wake sleeping device
+                    // }));
                     registeredUsers.forEach(({ badgeCount, registrationId }) => sendNotification({
                       to: registrationId,
-                      notification: {
-                        title: `${user.username} @ ${group.name}`,
-                        body: text,
-                        sound: 'default', // can use custom sounds -- see https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/SupportingNotificationsinYourApp.html#//apple_ref/doc/uid/TP40008194-CH4-SW10
-                        badge: badgeCount + 1, // badgeCount doesn't get updated in Promise return?!
-                        click_action: 'openGroup',
-                      },
                       data: {
+                        custom_notification: {
+                          title: `${user.username} @ ${group.name}`,
+                          body: text,
+                          sound: 'default', // can use custom sounds
+                          badge: badgeCount + 1, // badgeCount doesn't get updated in Promise return?!
+                          click_action: 'openGroup',
+                        },
                         title: `${user.username} @ ${group.name}`,
                         body: text,
                         type: 'MESSAGE_ADDED',
@@ -65,7 +85,7 @@ export const messageLogic = {
                           name: group.name,
                         },
                       },
-                      priority: 'high', // will wake sleeping device
+                      priority: 10,
                     }));
                   }
                 });
@@ -316,6 +336,13 @@ export const groupLogic = {
   },
 };
 
+export const tweetLogic = {
+  author(tweet, args, ctx) {
+    // TODO figure out how to get avatar to show up
+    return tweet.getUser({ attributes: ['id', 'username', 'firstName', 'lastName', 'avatar'] });
+  },
+};
+
 export const userLogic = {
   avatar(user, args, ctx) {
     return user.avatar ? getFileUrl(user.avatar) : null;
@@ -338,13 +365,41 @@ export const userLogic = {
       return user.getFriends({ attributes: ['id', 'username'] });
     });
   },
+  followeds(user, args, ctx) {
+    return getAuthenticatedUser(ctx).then((currentUser) => {
+      // TODO add privacy logic 
+      // if (currentUser.id !== user.id) {
+      //   return Promise.reject('Unauthorized');
+      // }
+
+      return user.getFolloweds({ attributes: ['id', 'username'] });
+    });
+  },
+  followers(user, args, ctx) {
+    return getAuthenticatedUser(ctx).then((currentUser) => {
+      // TODO add privacy logic 
+      // if (currentUser.id !== user.id) {
+      //   return Promise.reject('Unauthorized');
+      // }
+
+      return user.getFollowers({ attributes: ['id', 'username'] });
+    });
+  },
   groups(user, args, ctx) {
     return getAuthenticatedUser(ctx).then((currentUser) => {
       if (currentUser.id !== user.id) {
         return Promise.reject('Unauthorized');
       }
-
       return user.getGroups();
+    });
+  },
+  tweets(user, args, ctx) {
+    return getAuthenticatedUser(ctx).then((currentUser) => {
+      // TODO add logic to only return tweets if currentUser is following (and unblocked)
+      // if (currentUser.id !== user.id) {
+      //   return Promise.reject('Unauthorized');
+      // }
+      return user.getTweets();
     });
   },
   jwt(user) {
@@ -385,19 +440,15 @@ export const userLogic = {
 
     return getAuthenticatedUser(ctx).then((user) => { // eslint-disable-line arrow-body-style
       const options = {};
-
       if (registrationId || registrationId === null) {
         options.registrationId = registrationId;
       }
-
       if (badgeCount || badgeCount === 0) {
         options.badgeCount = badgeCount;
       }
-
       if (username) {
         options.username = username;
       }
-
       if (avatar) {
         return uploadFile({
           file: avatar.path,
@@ -418,6 +469,79 @@ export const userLogic = {
       return user.update(options);
     });
   },
+  updateFollowed(_, args, ctx) {
+    const { userId, followedId } = args.user;
+    return getAuthenticatedUser(ctx).then((user) => { // eslint-disable-line arrow-body-style
+      return User.findOne({
+        where: { id: followedId }
+      }).then((followedUser) => {
+        // check if already followed
+        // https://stackoverflow.com/a/35013525/1289188
+        return user.hasFollowed(followedUser).then((hasAlreadyFollowed) => {
+          if (hasAlreadyFollowed) {
+            return user.removeFollowed(followedUser);
+          }
+          return user.addFollowed(followedUser);
+        }).then(() => {
+          return User.findOne({
+            where: { id: user.id },
+          }).then((updatedUser) => {
+            return updatedUser;
+          });
+        });
+      });
+    });
+  },
+  // updateFollower(_, args, ctx) {
+  //   const { userId, followedId } = args.user;
+  //   return getAuthenticatedUser(ctx).then(user =>
+  //     User.findOne({ where: { id: followedId },
+  //     }).then(follower =>
+  //       user.addFollowed(follower),
+  //     ).then(() =>
+  //       User.findOne({ where: { id: user.id },
+  //       }).then(followedUser => followedUser),
+  //     ),
+  //   );
+  // },
+};
+
+export const usersLogic = {
+  query(_, args, ctx) {
+    return getAuthenticatedUser(ctx).then((user) => {
+      // must provide id of searching user in case certain user blocking him
+      // if (user.id === args.id && args.usernameString.length >= 3) {
+      if (user.id === args.id) {
+        // TODO add filtering based on search string, privacy, etc
+        return User.findAll({
+          where: {
+            username: {
+              $like: `%${args.usernameString}%`,
+            },
+          },
+          order: [['createdAt', 'DESC']],
+        });
+      }
+      // TODO send back empty array? No results come unless the usernameString is defined
+      return Promise.reject('Unauthorized/Invalid');
+    });
+  },
+};
+
+export const usernameLogic = {
+  query(_, args, ctx) {
+    return getAuthenticatedUser(ctx).then((currentUser) => {
+      if (currentUser.id === args.id) {
+        return User.findOne({
+          where: { id: args.usernameId },
+        }).then((username) => {
+          return username;
+        });
+      }
+
+      return Promise.reject('Unauthorized');
+    });
+  },
 };
 
 export const subscriptionLogic = {
@@ -432,11 +556,22 @@ export const subscriptionLogic = {
         return baseParams;
       });
   },
+  followedAdded(baseParams, args, ctx) {
+    return getAuthenticatedUser(ctx)
+      .then((user) => {
+        if (user.id !== args.userId) {
+          return Promise.reject('Unauthorized');
+        }
+        console.log('##########  followedAdded  ##########');
+        baseParams.context = ctx;
+        return baseParams;
+      });
+  },
   messageAdded(baseParams, args, ctx) {
     return getAuthenticatedUser(ctx)
       .then(user => user.getGroups({ where: { id: { $in: args.groupIds } }, attributes: ['id'] })
         .then((groups) => {
-        // user attempted to subscribe to some groups without access
+          // user attempted to subscribe to some groups without access
           if (args.groupIds.length > groups.length) {
             return Promise.reject('Unauthorized');
           }

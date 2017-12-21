@@ -270,10 +270,12 @@ class AppWithNavigationState extends Component {
   }
 
   componentWillMount() {
+    console.log('##########  AppWithNavigationState MOUNT  ##########');
     AppState.addEventListener('change', this.handleAppStateChange);
   }
 
   componentWillReceiveProps(nextProps) {
+    console.log('##########  AppWithNavigationState NEXTPROPS  ##########');
     // when we get the user, start listening for notifications
     if (nextProps.user && !this.props.user) {
       firebaseClient.init().then((registrationId) => {
@@ -351,8 +353,9 @@ class AppWithNavigationState extends Component {
   }
 
   render() {
+    console.log('##########  AppWithNavigationState RENDER  ##########');
     const { dispatch, nav } = this.props;
-    return <AppNavigator navigation={addNavigationHelpers({ dispatch, state: nav })} />;
+    return <AppNavigator navigation={addNavigationHelpers({ dispatch, state: nav }) } />;
   }
 }
 
@@ -379,9 +382,10 @@ AppWithNavigationState.propTypes = {
   }),
 };
 
-const mapStateToProps = ({ auth, nav }) => ({
+const mapStateToProps = ({ auth, nav, user }) => ({
   auth,
   nav,
+  user,
 });
 
 const userQuery = graphql(USER_QUERY, {

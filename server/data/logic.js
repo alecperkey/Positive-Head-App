@@ -500,7 +500,7 @@ export const userLogic = {
   //       user.addFollowed(follower),
   //     ).then(() =>
   //       User.findOne({ where: { id: user.id },
-  //       }).then(followedUser => followedUser),
+  //       }).then(followedUser > followedUser),
   //     ),
   //   );
   // },

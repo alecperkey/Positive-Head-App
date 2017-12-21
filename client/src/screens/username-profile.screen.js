@@ -13,7 +13,7 @@ import {
 import ProfileHeader from '../components/profile-header.component';
 import FeedCard from '../components/feedcard/feedcard.component';
 
-// import { USER_QUERY } from '../graphql/user.query';
+import { USER_QUERY } from '../graphql/user.query';
 import { USERNAME_QUERY } from '../graphql/username.query';
 import { UPDATE_FOLLOWED_MUTATION } from '../graphql/update-followed.mutation';
 
@@ -80,13 +80,14 @@ class UsernameProfile extends Component {
   )
 
   render() {
-    const { loading, username, networkStatus, updateFollowed } = this.props;
+    const { loading, user, username, networkStatus, updateFollowed } = this.props;
     const selectedUser = this.props.navigation.state.params.selectedUser || null;
     console.log('selectedUser', selectedUser);
+    console.log('user', user);
     // TODO determine, add follow button, add follow 
     // const userIsFollowing = _.find(user.followings, { id: user.id })
     // render loading placeholder while we fetch messages
-    if (loading || !username) {
+    if (loading || !username || !user) {
       return (
         <FlatList
           data={[1, 2, 3]}
@@ -97,20 +98,20 @@ class UsernameProfile extends Component {
       );
     }
     
-    const usernameIsFollowed = _.has(username.followeds, { id: selectedUser.id });
+    // TODO determine instead userIsFollowingUsername
+    const userIsFollowingUsername = _.has(user.followeds, { id: selectedUser.id });
     const usernameIsFollowing = true; //TODO show 'follows you' 
     // const renderFollowButton = ({onPress}) => <Button title={'Follow'} onPress={onPress} />;
     // render list of posts (tweets) for user
     // const toggleFollowed = ({usernameIsFollowed}) => 
-    debugger;
     return (
       <Root>
         <ProfileHeader
           {...username} 
-          usernameIsFollowed={usernameIsFollowed}
+          userIsFollowingUsername={userIsFollowingUsername}
           updateFollowed={updateFollowed}
         />
-        {usernameIsFollowed ? <FlatList
+        {userIsFollowingUsername ? <FlatList
           data={username.tweets}
           renderItem={this.renderItem}
           keyExtractor={this.keyExtractor}
@@ -162,22 +163,23 @@ UsernameProfile.propTypes = {
   }),
 };
 
-// const userQuery = graphql(USER_QUERY, {
-//   skip: ownProps => !ownProps.auth || !ownProps.auth.jwt,
-//   options: ownProps => ({ variables: { id: ownProps.auth.id } }),
-//   props: ({ userData: { loading, networkStatus, refetch, user } }) => ({
-//     loading, networkStatus, refetch, user,
-//   }),
-//   name: 'userData',
-// });
+const userQuery = graphql(USER_QUERY, {
+  name: 'userData',
+  skip: ownProps => !ownProps.auth || !ownProps.auth.jwt,
+  options: ownProps => ({ variables: { id: ownProps.auth.id } }),
+  props: ({ userData: { loading, networkStatus, refetch, user } }) => ({
+    loading, networkStatus, refetch, user,
+  }),
+});
 
 const usernameQuery = graphql(USERNAME_QUERY, {
+  name: 'usernameData', // https://www.apollographql.com/docs/react/basics/queries.html#graphql-name
   skip: ownProps => !ownProps.auth || !ownProps.auth.jwt ||
    !ownProps.navigation || !ownProps.navigation.state || 
    !ownProps.navigation.state.params || !ownProps.navigation.state.params.selectedUser ||
    !ownProps.navigation.state.params.selectedUser.id,
   options: ownProps => ({ variables: { id: ownProps.auth.id, usernameId: ownProps.navigation.state.params.selectedUser.id } }),
-  props: ({ data: { loading, networkStatus, refetch, username } }) => ({
+  props: ({ usernameData: { loading, networkStatus, refetch, username } }) => ({
     loading, networkStatus, refetch, username,
   }),
 });
@@ -208,5 +210,5 @@ export default compose(
   connect(mapStateToProps),
   updateFollowedMutation,
   usernameQuery,
-  // userQuery,
+  userQuery,
 )(UsernameProfile);

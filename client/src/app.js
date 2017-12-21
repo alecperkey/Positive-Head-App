@@ -26,8 +26,8 @@ import { logout } from './actions/auth.actions';
 import { FirebaseClient } from './firebase-client';
 
 // const URL = 'localhost:8080'; // set your comp's url here
-// const URL = '192.168.1.110:8080'; // set your comp's url here
-const URL = '192.168.1.31:8080'; // set your comp's url here
+const URL = '192.168.1.110:8080'; // set your comp's url here
+// const URL = '192.168.1.31:8080'; // set your comp's url here
 
 const networkInterface = createBatchingNetworkInterface({
   uri: `http://${URL}/graphql`,
@@ -157,6 +157,7 @@ if (UIManager.setLayoutAnimationEnabledExperimental) {
 }
 export default class App extends Component {
   render() {
+    console.log('##########  APP RENDER  ##########');
     return (
       <ApolloProvider store={store} client={client}>
         <ThemeProvider theme={colors}>

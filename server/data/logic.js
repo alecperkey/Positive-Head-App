@@ -471,23 +471,57 @@ export const userLogic = {
   },
   updateFollowed(_, args, ctx) {
     const { userId, followedId } = args.user;
-    return getAuthenticatedUser(ctx).then((user) => { // eslint-disable-line arrow-body-style
+    return getAuthenticatedUser(ctx).then((current) => { // eslint-disable-line arrow-body-style
+      const userOptions = {};
       return User.findOne({
         where: { id: followedId }
       }).then((followedUser) => {
         // check if already followed
         // https://stackoverflow.com/a/35013525/1289188
-        return user.hasFollowed(followedUser).then((hasAlreadyFollowed) => {
+        return current.hasFollowed(followedUser).then((hasAlreadyFollowed) => {
           if (hasAlreadyFollowed) {
-            return user.removeFollowed(followedUser);
+            console.log('##########  L hasAlreadyFollowed  ##########', hasAlreadyFollowed);
+            return current.removeFollowed(followedUser).then((result) => {
+              // if newly destroyed (unfollowed) association, result = 1
+              if (result && !result.length) {
+                console.log('##########  L followed destroyed  ##########');
+                // increment current.followedsCount
+                return Promise.all([
+                  current.decrement('followedsCount'),
+                  followedUser.decrement('followersCount'),
+                ]).then((incrementedUsers) => {
+                  console.log('##########  L incrementedUsers[0] 1  ##########', incrementedUsers[0].dataValues.updatedAt);
+                  return User.findOne({
+                    where: { id: current.id },
+                  }).then((updatedCurrent) => {
+                    console.log('########## L updateFollowed  1 ##########', updatedCurrent.dataValues.updatedAt);
+                    return updatedCurrent;
+                  });
+                });
+              }
+            });
           }
-          return user.addFollowed(followedUser);
-        }).then(() => {
-          return User.findOne({
-            where: { id: user.id },
-          }).then((updatedUser) => {
-            return updatedUser;
-          });
+          if (!hasAlreadyFollowed) {
+            console.log('##########  L !hasAlreadyFollowed  ##########', hasAlreadyFollowed);
+            return current.addFollowed(followedUser).then((result) => {
+              // if newly created association (followed) 
+              if (result && result[0] && result[0][0]) {
+                console.log('##########  L followed created  ##########', result[0][0].dataValues.updatedAt);
+                return Promise.all([
+                  current.increment('followedsCount'),
+                  followedUser.increment('followersCount'),
+                ]).then((incrementedUsers) => {
+                  console.log('##########  L incrementedUsers[0] 2  ##########', incrementedUsers[0].dataValues.updatedAt);
+                  return User.findOne({
+                    where: { id: current.id },
+                  }).then((updatedCurrent) => {
+                    console.log('########## L updateFollowed  2 ##########', updatedCurrent.dataValues.updatedAt);
+                    return updatedCurrent;
+                  });
+                });
+              }
+            });
+          }
         });
       });
     });
@@ -556,6 +590,7 @@ export const subscriptionLogic = {
         return baseParams;
       });
   },
+  // I DONT THINK WE ARE PROPERLY ASSESSING ARGS, SO CONSOLE NOT LOGGING
   followedAdded(baseParams, args, ctx) {
     return getAuthenticatedUser(ctx)
       .then((user) => {

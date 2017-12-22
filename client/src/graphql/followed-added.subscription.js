@@ -3,8 +3,8 @@ import gql from 'graphql-tag';
 import FOLLOWED_FRAGMENT from './followed.fragment';
 
 const FOLLOWED_ADDED_SUBSCRIPTION = gql`
-  subscription onFollowedAdded($userId: Int, $followedId: Int){
-    followedAdded(userId: $userId, followedId: $followedId){
+  subscription onFollowedAdded($userId: Int!){
+    followedAdded(userId: $userId){
       ... FollowedFragment
     }
   }

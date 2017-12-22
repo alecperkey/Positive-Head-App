@@ -101,7 +101,7 @@ const MetaTextLabel = styled.Text`
   color: ${props => props.theme.LIGHT_GRAY};
 `;
 
-export default function ProfileHeader({ firstName, lastName, avatar, username, followeds, followers, usernameIsFollowed, updateFollowed }) {
+export default function ProfileHeader({ firstName, lastName, avatar, username, followedsCount, followersCount, usernameIsFollowed, updateFollowed }) {
   return (
     <Root>
       <Heading>
@@ -116,13 +116,13 @@ export default function ProfileHeader({ firstName, lastName, avatar, username, f
             </MetaBox>
             <MetaBox>
               <MetaTextContainer>
-                <MetaTextNumber>{(followeds) ? followeds.length : 0}</MetaTextNumber>
+                <MetaTextNumber>{followedsCount}</MetaTextNumber>
                 <MetaTextLabel>following</MetaTextLabel>
               </MetaTextContainer>
             </MetaBox>
             <MetaBox>
               <MetaTextContainer>
-                <MetaTextNumber>{(followers) ? followers.length : 0}</MetaTextNumber>
+                <MetaTextNumber>{followersCount}</MetaTextNumber>
                 <MetaTextLabel>followers</MetaTextLabel>
               </MetaTextContainer>
             </MetaBox>

@@ -10,6 +10,8 @@ export const USERNAME_QUERY = gql`
       firstName
       lastName
       username
+      followedsCount
+      followersCount
       followeds {
         id
         username

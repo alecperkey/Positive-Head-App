@@ -112,6 +112,8 @@ export const Schema = [`
     friends: [User] # user's friends/contacts
     followeds: [User] # all being followed by this user
     followers: [User] # all following this user
+    followedsCount: Int
+    followersCount: Int
     jwt: String # json web token for access
     registrationId: String
     avatar: String # url for avatar image
@@ -171,7 +173,7 @@ export const Schema = [`
     # for any of the groups with one of these groupIds
     messageAdded(groupIds: [Int]): Message
     groupAdded(userId: Int): Group
-    followedAdded(userId: Int!, followedId: Int!): User
+    followedAdded(userId: Int!): User
   }
   
   schema {

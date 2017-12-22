@@ -8,7 +8,6 @@ const FOLLOWED_FRAGMENT = gql`
       id
       username
     }
-    createdAt
   }
 `;
 

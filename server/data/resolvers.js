@@ -56,6 +56,11 @@ export const Resolvers = {
     updateFollowed(_, args, ctx) {
       return userLogic.updateFollowed(_, args, ctx).then((user) => {
         // returning the currentuser, not the newly followed user...
+        console.log('########## RM updateFollowed  ##########', user.dataValues.updatedAt);
+        // returning the currentuser, not the newly followed user...
+        console.log('########## RM updateFollowed  ##########', user.dataValues.followedsCount);
+        console.log('########## RM updateFollowed ARGS  ##########', args );
+        
         pubsub.publish(FOLLOWED_ADDED, { [FOLLOWED_ADDED]: user });
         return user;
       });
@@ -159,14 +164,15 @@ export const Resolvers = {
         () => pubsub.asyncIterator(FOLLOWED_ADDED),
         (payload, args, ctx) => {
           return ctx.user.then((user) => {
-            console.log('##########  user  ##########');
-            console.log(user);
-            console.log('##########  args  ##########');
+            console.log('##########  RS user  ##########');
+            // console.log(user);
+            console.log('##########  RS args  ##########');
             console.log(args);
-            console.log('##########  payload  ##########');
-            console.log(payload);
+            console.log('##########  RS payload  ##########');
+            // console.log(payload);
             return Boolean(
-              args.userId === payload.followedAdded.followedId,
+              // if this user is the one whos followeds changed (followAdded = followedsToggled)
+              args.userId === payload.followedAdded.user.dataValues.id,
             );
           });
         },

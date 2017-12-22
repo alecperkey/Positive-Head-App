@@ -220,8 +220,8 @@ const AppNavigator = StackNavigator({
     screen: NewMessageModal,
   },
 }, {
-  mode: 'modal',
-});
+    mode: 'modal',
+  });
 
 // reducer initialization code
 const firstAction = AppNavigator.router.getActionForPathAndParams('Main');
@@ -299,7 +299,7 @@ class AppWithNavigationState extends Component {
       if (this.messagesSubscription) {
         this.messagesSubscription();
       }
-// todo finish here
+      // todo finish here
       if (this.subscribeToFolloweds) {
         this.subscribeToFolloweds();
       }
@@ -330,6 +330,9 @@ class AppWithNavigationState extends Component {
     if (!this.groupSubscription && nextProps.user) {
       this.groupSubscription = nextProps.subscribeToGroups();
     }
+    if (!this.subscribeToFolloweds && nextProps.user) {
+      this.subscribeToFolloweds = nextProps.subscribeToFolloweds();
+    }
   }
 
   componentWillUnmount() {
@@ -355,7 +358,7 @@ class AppWithNavigationState extends Component {
   render() {
     console.log('##########  AppWithNavigationState RENDER  ##########');
     const { dispatch, nav } = this.props;
-    return <AppNavigator navigation={addNavigationHelpers({ dispatch, state: nav }) } />;
+    return <AppNavigator navigation={addNavigationHelpers({ dispatch, state: nav })} />;
   }
 }
 
@@ -382,10 +385,9 @@ AppWithNavigationState.propTypes = {
   }),
 };
 
-const mapStateToProps = ({ auth, nav, user }) => ({
+const mapStateToProps = ({ auth, nav }) => ({
   auth,
   nav,
-  user,
 });
 
 const userQuery = graphql(USER_QUERY, {
@@ -452,8 +454,16 @@ const userQuery = graphql(USER_QUERY, {
     subscribeToFolloweds() {
       return subscribeToMore({
         document: FOLLOWED_ADDED_SUBSCRIPTION,
-        variables: { userId: user.id },
+        variables: {
+          userId: user.id,
+          // followedsIds: map(user.followeds, 'id'),
+        },
         updateQuery: (previousResult, { subscriptionData }) => {
+          console.log('############### subscriptionData ###############');
+          debugger;
+          if (!subscriptionData.data) {
+            return previousResult;
+          }
           const newFollowed = subscriptionData.data.followedAdded;
 
           return update(previousResult, {

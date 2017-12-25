@@ -270,7 +270,10 @@ class AppWithNavigationState extends Component {
   }
 
   componentWillMount() {
-    console.log('##########  AppWithNavigationState MOUNT  ##########');
+    console.log('##########  AppWithNavigationState WILL_MOUNT  ##########');
+  }
+  componentDidMount() {
+    console.log('##########  AppWithNavigationState DID_MOUNT  ##########');
     AppState.addEventListener('change', this.handleAppStateChange);
   }
 
@@ -331,6 +334,7 @@ class AppWithNavigationState extends Component {
       this.groupSubscription = nextProps.subscribeToGroups();
     }
     if (!this.subscribeToFolloweds && nextProps.user) {
+      console.log('##########  subscribeToFolloweds()  ##########');
       this.subscribeToFolloweds = nextProps.subscribeToFolloweds();
     }
   }
@@ -356,9 +360,14 @@ class AppWithNavigationState extends Component {
   }
 
   render() {
-    console.log('##########  AppWithNavigationState RENDER  ##########');
-    const { dispatch, nav } = this.props;
-    return <AppNavigator navigation={addNavigationHelpers({ dispatch, state: nav })} />;
+    const { dispatch, nav, user } = this.props;
+    if (!user) {
+      console.log('##########  AppWithNavigationState RENDER NOUSER ##########');
+      return <AppNavigator navigation={addNavigationHelpers({ dispatch, state: nav })} />;
+    }
+    console.log('##########  AppWithNavigationState RENDER USER  ##########');
+    // here we are storing user data in navigation
+    return <AppNavigator navigation={addNavigationHelpers({ dispatch, state: nav, user })} />;
   }
 }
 
@@ -441,6 +450,8 @@ const userQuery = graphql(USER_QUERY, {
         document: GROUP_ADDED_SUBSCRIPTION,
         variables: { userId: user.id },
         updateQuery: (previousResult, { subscriptionData }) => {
+          console.log('############### GROUP subscriptionData ###############');
+          debugger;
           const newGroup = subscriptionData.data.groupAdded;
 
           return update(previousResult, {
@@ -459,7 +470,7 @@ const userQuery = graphql(USER_QUERY, {
           // followedsIds: map(user.followeds, 'id'),
         },
         updateQuery: (previousResult, { subscriptionData }) => {
-          console.log('############### subscriptionData ###############');
+          console.log('!!!!!!!!!!!!!!! FOLLOWEDS subscriptionData ###############');
           debugger;
           if (!subscriptionData.data) {
             return previousResult;

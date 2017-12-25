@@ -82,8 +82,8 @@ class UsernameProfile extends Component {
   render() {
     const { loading, user, username, networkStatus, updateFollowed } = this.props;
     const selectedUser = this.props.navigation.state.params.selectedUser || null;
-    console.log('selectedUser', selectedUser);
-    console.log('user', user);
+    // console.log('selectedUser', selectedUser);
+    // console.log('user', user);
     // TODO determine, add follow button, add follow 
     // const userIsFollowing = _.find(user.followings, { id: user.id })
     // render loading placeholder while we fetch messages
@@ -99,8 +99,9 @@ class UsernameProfile extends Component {
     }
     
     // TODO determine instead userIsFollowingUsername
-    const userIsFollowingUsername = _.has(user.followeds, { id: selectedUser.id });
+    const userIsFollowingUsername = _.some(user.followeds, { id: selectedUser.id });
     const usernameIsFollowing = true; //TODO show 'follows you' 
+    console.log('##########  userIsFollowingUsernahasme  ##########', userIsFollowingUsername);
     // const renderFollowButton = ({onPress}) => <Button title={'Follow'} onPress={onPress} />;
     // render list of posts (tweets) for user
     // const toggleFollowed = ({usernameIsFollowed}) => 
@@ -189,18 +190,64 @@ const updateFollowedMutation = graphql(UPDATE_FOLLOWED_MUTATION, {
   !ownProps.navigation || !ownProps.navigation.state || 
   !ownProps.navigation.state.params || !ownProps.navigation.state.params.selectedUser ||
   !ownProps.navigation.state.params.selectedUser.id,
-  props: ({ ownProps, mutate }) => ({
-    updateFollowed: () =>
-      mutate({
-        variables: {
-          user: {
-            userId: ownProps.auth.id,
-            followedId: ownProps.navigation.state.params.selectedUser.id
+  props: ({ ownProps, mutate }) => {
+    const { user, state } = {...ownProps.navigation};
+    const username = state.params.selectedUser;
+    const userIsFollowingUsername = _.some(user.followeds, { id: username.id });
+    console.log('user', user, 'state', state);
+    return {
+      updateFollowed: () =>
+        mutate({
+          variables: {
+            user: {
+              userId: ownProps.auth.id,
+              followedId: state.params.selectedUser.id,
+            },
           },
-        },
-      }),
-  }),
+          optimisticResponse: {
+            __typename: 'Mutation',
+            updateFollowed: {
+              __typename: 'User',
+              id: ownProps.auth.id,
+              username: ownProps.auth.username,
+              followeds: (userIsFollowingUsername)
+                ? [] // user unfollows all for now 
+                : [...user.followeds, { id: username.id, username: username.username, __typename: 'User' }], // don't need check for optimistic UI
+              followedsCount: (userIsFollowingUsername)
+                ? user.followedsCount - 1
+                : user.followedsCount + 1,
+            },
+          },
+          update: (store, { data: { updateFollowed } }) => {
+            // Read the data from our cache for this query
+            const usernameData = store.readQuery({
+              query: USERNAME_QUERY,
+              variables: {
+                id: user.id,
+                usernameId: username.id,
+              },
+            });
+
+            // Increment or decrement the username followersCount
+            console.log('@@@@@@ updateFollowed', updateFollowed);
+            if (userIsFollowingUsername) usernameData.followersCount -= 1;
+            if (!userIsFollowingUsername) usernameData.followersCount += 1;
+
+            // Write username data back to the cache
+            store.writeQuery({
+              query: USERNAME_QUERY,
+              variables: {
+                id: user.id,
+                usernameId: username.id,
+              },
+              data: usernameData,
+            });
+          },
+        }),
+    };
+  },
 });
+
 
 const mapStateToProps = ({ auth }) => ({
   auth,

@@ -4,6 +4,7 @@ const FOLLOWED_FRAGMENT = gql`
   fragment FollowedFragment on User {
     id
     username
+    followedsCount
     followeds {
       id
       username

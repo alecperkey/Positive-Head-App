@@ -267,7 +267,7 @@ UsernameSearch.propTypes = {
 
 const usersQuery = graphql(USERS_QUERY, {
   options: (ownProps) => {
-    console.log(ownProps);
+    // console.log(ownProps);
     let usernameQuery = (ownProps.navigation.state.params && ownProps.navigation.state.params.usernameString)
       ? ownProps.navigation.state.params.usernameString
       : '';

@@ -5,6 +5,11 @@ export const UPDATE_FOLLOWED_MUTATION = gql`
     updateFollowed(user: $user) {
       id
       username
+      followedsCount
+      followeds {
+        id
+        username
+      }
     }
   }
 `;

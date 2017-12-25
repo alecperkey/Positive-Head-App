@@ -56,13 +56,17 @@ export const Resolvers = {
     updateFollowed(_, args, ctx) {
       return userLogic.updateFollowed(_, args, ctx).then((user) => {
         // returning the currentuser, not the newly followed user...
-        console.log('########## RM updateFollowed  ##########', user.dataValues.updatedAt);
-        // returning the currentuser, not the newly followed user...
-        console.log('########## RM updateFollowed  ##########', user.dataValues.followedsCount);
-        console.log('########## RM updateFollowed ARGS  ##########', args );
-        
-        pubsub.publish(FOLLOWED_ADDED, { [FOLLOWED_ADDED]: user });
-        return user;
+        if (user) {
+          console.log('########## RM updateFollowed  ##########', user.dataValues.updatedAt);
+          // returning the currentuser, not the newly followed user...
+          console.log('########## RM updateFollowed  ##########', user.dataValues.followedsCount);
+          console.log('########## RM updateFollowed ARGS  ##########', args);
+
+          pubsub.publish(FOLLOWED_ADDED, { [FOLLOWED_ADDED]: user });
+          return user;
+        }
+        console.warn('########## RM updateFollowed NO-USER  ##########', args);
+        return Promise.reject('Could not follow/unfollow user');
       });
     },
     deleteGroup(_, args, ctx) {

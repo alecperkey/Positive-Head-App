@@ -101,7 +101,7 @@ const MetaTextLabel = styled.Text`
   color: ${props => props.theme.LIGHT_GRAY};
 `;
 
-export default function ProfileHeader({ firstName, lastName, avatar, username, followedsCount, followersCount, usernameIsFollowed, updateFollowed }) {
+export default function ProfileHeader({ firstName, lastName, avatar, username, followedsCount, followersCount, userIsFollowingUsername, updateFollowed }) {
   return (
     <Root>
       <Heading>
@@ -131,7 +131,7 @@ export default function ProfileHeader({ firstName, lastName, avatar, username, f
             <MetaBox>
               <Button onPress={updateFollowed}>
                 <ButtonText>
-                  { (usernameIsFollowed) ? 'Unfollow' : 'Follow' }
+                  { (userIsFollowingUsername) ? 'Unfollow' : 'Follow' }
                 </ButtonText>
               </Button>
             </MetaBox>

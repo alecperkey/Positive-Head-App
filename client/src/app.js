@@ -157,6 +157,7 @@ if (UIManager.setLayoutAnimationEnabledExperimental) {
 }
 export default class App extends Component {
   render() {
+    console.log('##########  APP RENDER  ##########');
     return (
       <ApolloProvider store={store} client={client}>
         <ThemeProvider theme={colors}>

@@ -13,7 +13,7 @@ import {
 import ProfileHeader from '../components/profile-header.component';
 import FeedCard from '../components/feedcard/feedcard.component';
 
-// import { USER_QUERY } from '../graphql/user.query';
+import { USER_QUERY } from '../graphql/user.query';
 import { USERNAME_QUERY } from '../graphql/username.query';
 import { UPDATE_FOLLOWED_MUTATION } from '../graphql/update-followed.mutation';
 
@@ -44,7 +44,7 @@ class UsernameProfile extends Component {
     // this.goToMessages = this.goToMessages.bind(this);
     // this.goToNewGroup = this.goToNewGroup.bind(this);
     this.onRefresh = this.onRefresh.bind(this);
-    // this.updateFollowed = this.updateFollowed.bind(this);
+    // this.handleUpdateFollowed = this.handleUpdateFollowed.bind(this);
     // props.navigation.state.params.selectedUser
   }
 
@@ -65,11 +65,6 @@ class UsernameProfile extends Component {
   //   navigate('NewGroup');
   // }
 
-  // updateFollowed() {
-  //   this.props.updateFollowed({ username, avatar }).then(({ data: { updateFollowed } }) => {
-  //   });
-  // }
-
   renderItem = ({ item }) => <FeedCard {...item} />;
 
   renderPlaceholder = () => (
@@ -80,13 +75,13 @@ class UsernameProfile extends Component {
   )
 
   render() {
-    const { loading, username, networkStatus, updateFollowed } = this.props;
+    const { loading, user, username, networkStatus, updateFollowed } = this.props;
     const selectedUser = this.props.navigation.state.params.selectedUser || null;
-    console.log('selectedUser', selectedUser);
+    // console.log('selectedUser', selectedUser);
     // TODO determine, add follow button, add follow 
     // const userIsFollowing = _.find(user.followings, { id: user.id })
     // render loading placeholder while we fetch messages
-    if (loading || !username) {
+    if (loading || !username || !user) {
       return (
         <FlatList
           data={[1, 2, 3]}
@@ -96,21 +91,29 @@ class UsernameProfile extends Component {
         />
       );
     }
-    
-    const usernameIsFollowed = _.has(username.followeds, { id: selectedUser.id });
+
+    // TODO determine instead userIsFollowingUsername
+    const userIsFollowingUsername = _.some(user.followeds, { id: selectedUser.id });
     const usernameIsFollowing = true; //TODO show 'follows you' 
+    // debugger;
+    console.log('##########  userIsFollowingUsername  ##########', userIsFollowingUsername);
+    console.log('##########  username.followersCount  ##########', username.followersCount);
+    console.log('##########  username.followers.length  ##########', username);
     // const renderFollowButton = ({onPress}) => <Button title={'Follow'} onPress={onPress} />;
     // render list of posts (tweets) for user
     // const toggleFollowed = ({usernameIsFollowed}) => 
-    debugger;
+    // const handleUpdateFollowed = userIsFollowingUsername =>
+    //   this.props.updateFollowed( userIsFollowingUsername );
+
+
     return (
       <Root>
         <ProfileHeader
-          {...username} 
-          usernameIsFollowed={usernameIsFollowed}
-          updateFollowed={updateFollowed}
+          {...username}
+          userIsFollowingUsername={userIsFollowingUsername}
+          updateFollowed={() => updateFollowed(userIsFollowingUsername)}
         />
-        {usernameIsFollowed ? <FlatList
+        {userIsFollowingUsername ? <FlatList
           data={username.tweets}
           renderItem={this.renderItem}
           keyExtractor={this.keyExtractor}
@@ -162,51 +165,134 @@ UsernameProfile.propTypes = {
   }),
 };
 
-// const userQuery = graphql(USER_QUERY, {
-//   skip: ownProps => !ownProps.auth || !ownProps.auth.jwt,
-//   options: ownProps => ({ variables: { id: ownProps.auth.id } }),
-//   props: ({ userData: { loading, networkStatus, refetch, user } }) => ({
-//     loading, networkStatus, refetch, user,
-//   }),
-//   name: 'userData',
-// });
+const userQuery = graphql(USER_QUERY, {
+  name: 'userData',
+  skip: ownProps => !ownProps.auth || !ownProps.auth.jwt,
+  options: ownProps => ({ variables: { id: ownProps.auth.id } }),
+  props: ({ userData: { loading, networkStatus, refetch, user } }) => ({
+    loading, networkStatus, refetch, user,
+  }),
+});
 
 const usernameQuery = graphql(USERNAME_QUERY, {
+  name: 'usernameData', // https://www.apollographql.com/docs/react/basics/queries.html#graphql-name
   skip: ownProps => !ownProps.auth || !ownProps.auth.jwt ||
-   !ownProps.navigation || !ownProps.navigation.state || 
-   !ownProps.navigation.state.params || !ownProps.navigation.state.params.selectedUser ||
-   !ownProps.navigation.state.params.selectedUser.id,
+    !ownProps.navigation || !ownProps.navigation.state ||
+    !ownProps.navigation.state.params || !ownProps.navigation.state.params.selectedUser ||
+    !ownProps.navigation.state.params.selectedUser.id,
   options: ownProps => ({ variables: { id: ownProps.auth.id, usernameId: ownProps.navigation.state.params.selectedUser.id } }),
-  props: ({ data: { loading, networkStatus, refetch, username } }) => ({
+  props: ({ usernameData: { loading, networkStatus, refetch, username } }) => ({
     loading, networkStatus, refetch, username,
   }),
 });
 
 const updateFollowedMutation = graphql(UPDATE_FOLLOWED_MUTATION, {
   skip: ownProps => !ownProps.auth || !ownProps.auth.jwt ||
-  !ownProps.navigation || !ownProps.navigation.state || 
-  !ownProps.navigation.state.params || !ownProps.navigation.state.params.selectedUser ||
-  !ownProps.navigation.state.params.selectedUser.id,
-  props: ({ ownProps, mutate }) => ({
-    updateFollowed: () =>
-      mutate({
-        variables: {
-          user: {
-            userId: ownProps.auth.id,
-            followedId: ownProps.navigation.state.params.selectedUser.id
+    !ownProps.navigation || !ownProps.navigation.state ||
+    !ownProps.navigation.state.params || !ownProps.navigation.state.params.selectedUser ||
+    !ownProps.navigation.state.params.selectedUser.id,
+  props: ({ ownProps, mutate }) => {
+    const { user, state } = { ...ownProps.navigation };
+    const username = state.params.selectedUser;
+    const userIsFollowingUsername = _.some(user.followeds, { id: username.id });
+    // update folllowers db table
+    console.log('!!!!!! userIsFollowingUsername?', userIsFollowingUsername);
+    return {
+      updateFollowed: alreadyFollowin =>
+        mutate({
+          variables: {
+            user: {
+              userId: ownProps.auth.id,
+              followedId: state.params.selectedUser.id,
+            },
           },
-        },
-      }),
-  }),
+          optimisticResponse: {
+            __typename: 'Mutation',
+            updateFollowed: {
+              __typename: 'User',
+              id: ownProps.auth.id,
+              username: ownProps.auth.username,
+              followeds: (alreadyFollowin)
+                ? [] // user unfollows all for now 
+                : [...user.followeds, { id: username.id, username: username.username, __typename: 'User' }], // don't need check for optimistic UI
+              followedsCount: (alreadyFollowin)
+                // ? console.log(user.followedsCount, '-1')
+                // : console.log(ownProps, user.followedsCount, username, '+1', alreadyFollowin),
+                ? user.followedsCount - 1
+                : user.followedsCount + 1,
+            },
+          },
+          update: (store, { data: { updateFollowed } }) => {
+            // Read the data from our cache for this query
+            const usernameData = store.readQuery({
+              query: USERNAME_QUERY,
+              variables: {
+                id: user.id,
+                usernameId: username.id,
+              },
+            });
+
+            const userData = store.readQuery({
+              query: USER_QUERY,
+              variables: {
+                id: ownProps.auth.id,
+              },
+            });
+
+            // console.log('@@@@@@ before', usernameData.username.followersCount);
+            // console.log('@@@@@@ before', usernameData.username.followers);
+            // console.log('@@@@@@ updateFollowed', updateFollowed);
+            const updateFollowedOptimistic = _.some(updateFollowed.followeds, { id: username.id });
+            // const userAlreadyFollowing = _.some(user.followeds, { id: username.id }); // ERROR HERE
+            // const userCacheAlreadyFollowing = _.some(userData.user.followeds, { id: username.id });
+            const usernameAlreadyFollowed = _.some(usernameData.username.followers, { id: user.id });
+            // Increment or decrement the username followersCount
+            // console.log('@@@@@@ updateFollowedAlready', updateFollowedAlready);
+            // console.log('@@@@@@ userAlreadyFollowing', userAlreadyFollowing);
+            // console.log('@@@@@@ userCacheAlreadyFollowing', userCacheAlreadyFollowing);
+            // console.log('@@@@@@ usernameAlreadyFollowed', usernameAlreadyFollowed);
+
+            if (updateFollowedOptimistic && !usernameAlreadyFollowed) usernameData.username.followersCount += 1;
+            // this might also work
+            // if (usernameData.username.followersCount > usernameData.username.followers.length) usernameData.username.followersCount -= 1;
+            if (!updateFollowedOptimistic) usernameData.username.followersCount -= 1;
+
+
+            // console.log('@@@@@@ after', usernameData.username.followersCount);
+
+            // Write our data back to the cache.
+            store.writeQuery({
+              query: USER_QUERY,
+              variables: {
+                id: ownProps.auth.id,
+              },
+              data: userData,
+            });
+
+            // Write username data back to the cache
+            store.writeQuery({
+              query: USERNAME_QUERY,
+              variables: {
+                id: user.id,
+                usernameId: username.id,
+              },
+              data: usernameData,
+            });
+          },
+        }),
+    };
+  },
 });
 
-const mapStateToProps = ({ auth }) => ({
+
+const mapStateToProps = ({ auth, user, }) => ({
   auth,
+  user,
 });
 
 export default compose(
   connect(mapStateToProps),
   updateFollowedMutation,
   usernameQuery,
-  // userQuery,
+  userQuery,
 )(UsernameProfile);

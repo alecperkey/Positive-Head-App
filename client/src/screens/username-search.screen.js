@@ -167,7 +167,7 @@ class UsernameSearch extends Component {
     if (nextState.usernameString !== this.state.usernameString) {
       this.refreshNavigation(nextState.usernameString);
     }
-    console.log('nextState', nextState);
+    // console.log('nextState', nextState);
   }
 
   pop() {
@@ -267,7 +267,7 @@ UsernameSearch.propTypes = {
 
 const usersQuery = graphql(USERS_QUERY, {
   options: (ownProps) => {
-    console.log(ownProps);
+    // console.log(ownProps);
     let usernameQuery = (ownProps.navigation.state.params && ownProps.navigation.state.params.usernameString)
       ? ownProps.navigation.state.params.usernameString
       : '';

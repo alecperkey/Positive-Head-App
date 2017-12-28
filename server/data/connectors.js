@@ -29,6 +29,8 @@ const TweetModel = db.define('tweet', {
 // define users
 const UserModel = db.define('user', {
   badgeCount: { type: Sequelize.INTEGER },
+  followedsCount: { type: Sequelize.INTEGER },
+  followersCount: { type: Sequelize.INTEGER },
   email: { type: Sequelize.STRING },
   firstName: { type: Sequelize.STRING },
   lastName: { type: Sequelize.STRING },
@@ -89,6 +91,8 @@ db.sync({ force: true }).then(() => _.times(GROUPS, () => GroupModel.create({
   const password = 'w'; // test commit
   return bcrypt.hash(password, 10).then(hash => group.createUser({
     badgeCount: 0,
+    followedsCount: 0,
+    followersCount: 0,
     email: faker.internet.email(),
     username: faker.internet.userName(),
     firstName: faker.name.firstName(),
@@ -134,10 +138,12 @@ db.sync({ force: true }).then(() => _.times(GROUPS, () => GroupModel.create({
         // current user gains a follower from group with 50% chance
         if (i !== j && Math.random() < 0.5) {
           current.addFollower(user);
+          current.increment('followersCount');
         }
         // current user follows others in group with 50% chance
         if (i !== j && Math.random() < 0.5) {
           current.addFollowed(user);
+          current.increment('followedsCount');
         }
       });
     });

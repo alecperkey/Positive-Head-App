@@ -111,7 +111,7 @@ class UsernameProfileFolloweds extends Component {
       ? state.params.username.username
       : '';
     return {
-      title: `${usernameUsername}'s Followeds`,
+      title: `${usernameUsername}'s Following`,
     };
   };
 
@@ -193,10 +193,10 @@ class UsernameProfileFolloweds extends Component {
   }
 
   handleCellSelect(cell) {
-    const { navigate } = this.props.navigation;
+    const { navigate, user } = this.props.navigation;
     navigate('UsernameProfile', {
       selectedUser: cell,
-      userId: this.props.user.id,
+      userId: user.id,
     });
   }
 

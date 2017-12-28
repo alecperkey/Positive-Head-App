@@ -47,6 +47,7 @@ class UsernameProfile extends Component {
     // this.handleUpdateFollowed = this.handleUpdateFollowed.bind(this);
     // props.navigation.state.params.selectedUser
     this.handleNavToUsernameFollowers = this.handleNavToUsernameFollowers.bind(this);
+    this.handleNavToUsernameFolloweds = this.handleNavToUsernameFolloweds.bind(this);
   }
 
   onRefresh() {
@@ -69,6 +70,14 @@ class UsernameProfile extends Component {
   handleNavToUsernameFollowers() {
     const { navigate } = this.props.navigation;
     navigate('UsernameProfileFollowers', {
+      username: this.props.username,
+      userId: this.props.user.id,
+    });
+  }
+
+  handleNavToUsernameFolloweds() {
+    const { navigate } = this.props.navigation;
+    navigate('UsernameProfileFolloweds', {
       username: this.props.username,
       userId: this.props.user.id,
     });
@@ -121,6 +130,7 @@ class UsernameProfile extends Component {
           userIsFollowingUsername={userIsFollowingUsername}
           updateFollowed={() => updateFollowed(userIsFollowingUsername)}
           navToUsernameFollowers={this.handleNavToUsernameFollowers}
+          navToUsernameFolloweds={this.handleNavToUsernameFolloweds}
         />
         {userIsFollowingUsername ? <FlatList
           data={username.tweets}

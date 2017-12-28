@@ -119,7 +119,8 @@ export default function ProfileHeader({
   followersCount,
   userIsFollowingUsername,
   updateFollowed,
-  navToUsernameFollowers
+  navToUsernameFollowers,
+  navToUsernameFolloweds,
 }) {
   return (
     <Root>
@@ -132,6 +133,14 @@ export default function ProfileHeader({
                 <MetaTextNumber>314</MetaTextNumber>
                 <MetaTextLabel>posts</MetaTextLabel>
               </MetaTextContainer>
+            </MetaBox>
+            <MetaBox>
+              <TouchableMetaTextContainer onPress={navToUsernameFolloweds}>
+                <View>
+                  <MetaTextNumber>{followedsCount}</MetaTextNumber>
+                  <MetaTextLabel>following</MetaTextLabel>
+                </View>
+              </TouchableMetaTextContainer>
             </MetaBox>
             <MetaBox>
               <TouchableMetaTextContainer onPress={navToUsernameFollowers}>

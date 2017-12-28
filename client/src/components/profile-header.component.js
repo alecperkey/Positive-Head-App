@@ -4,6 +4,8 @@ import Touchable from '@appandflow/touchable';
 
 const AVATAR_SIZE = 60;
 
+const View = styled.View``;
+
 const Root = styled.View`
   height: 210;
   alignSelf: stretch;
@@ -64,7 +66,7 @@ const BottomMetaContainer = styled.View`
 
 const Button = styled(Touchable).attrs({
   feedback: 'opacity',
-})`
+}) `
   flex: 1;
   flexDirection: row;
   alignItems: center;
@@ -89,6 +91,13 @@ const MetaTextContainer = styled.View`
   flexDirection: column;
 `;
 
+const TouchableMetaTextContainer = styled(Touchable).attrs({
+  feedback: 'opacity',
+}) `
+  flex: 1;
+  flexDirection: column;
+`;
+
 const MetaTextNumber = styled.Text`
   fontWeight: 600;
   fontSize: 16;
@@ -101,7 +110,18 @@ const MetaTextLabel = styled.Text`
   color: ${props => props.theme.LIGHT_GRAY};
 `;
 
-export default function ProfileHeader({ firstName, lastName, avatar, username, followedsCount, followersCount, userIsFollowingUsername, updateFollowed }) {
+export default function ProfileHeader({
+  firstName,
+  lastName,
+  avatar,
+  username,
+  followedsCount,
+  followersCount,
+  userIsFollowingUsername,
+  updateFollowed,
+  navToUsernameFollowers,
+  navToUsernameFolloweds,
+}) {
   return (
     <Root>
       <Heading>
@@ -115,23 +135,27 @@ export default function ProfileHeader({ firstName, lastName, avatar, username, f
               </MetaTextContainer>
             </MetaBox>
             <MetaBox>
-              <MetaTextContainer>
-                <MetaTextNumber>{followedsCount}</MetaTextNumber>
-                <MetaTextLabel>following</MetaTextLabel>
-              </MetaTextContainer>
+              <TouchableMetaTextContainer onPress={navToUsernameFolloweds}>
+                <View>
+                  <MetaTextNumber>{followedsCount}</MetaTextNumber>
+                  <MetaTextLabel>following</MetaTextLabel>
+                </View>
+              </TouchableMetaTextContainer>
             </MetaBox>
             <MetaBox>
-              <MetaTextContainer>
-                <MetaTextNumber>{followersCount}</MetaTextNumber>
-                <MetaTextLabel>followers</MetaTextLabel>
-              </MetaTextContainer>
+              <TouchableMetaTextContainer onPress={navToUsernameFollowers}>
+                <View>
+                  <MetaTextNumber>{followersCount}</MetaTextNumber>
+                  <MetaTextLabel>followers</MetaTextLabel>
+                </View>
+              </TouchableMetaTextContainer>
             </MetaBox>
           </TopMetaContainer>
           <BottomMetaContainer>
             <MetaBox>
               <Button onPress={updateFollowed}>
                 <ButtonText>
-                  { (userIsFollowingUsername) ? 'Unfollow' : 'Follow' }
+                  {(userIsFollowingUsername) ? 'Unfollow' : 'Follow'}
                 </ButtonText>
               </Button>
             </MetaBox>

@@ -18,6 +18,8 @@ import Messages from './screens/messages.screen';
 import FinalizeGroup from './screens/finalize-group.screen';
 import UsernameSearch from './screens/username-search.screen';
 import UsernameProfile from './screens/username-profile.screen';
+import UsernameProfileFollowers from './screens/username-profile-followers.screen';
+import UsernameProfileFolloweds from './screens/username-profile-followeds.screen';
 import GroupDetails from './screens/group-details.screen';
 import NewGroup from './screens/new-group.screen';
 import Signin from './screens/signin.screen';
@@ -213,6 +215,12 @@ const AppNavigator = StackNavigator({
   UsernameProfile: {
     screen: UsernameProfile,
   },
+  UsernameProfileFolloweds: {
+    screen: UsernameProfileFolloweds,
+  },
+  UsernameProfileFollowers: {
+    screen: UsernameProfileFollowers,
+  },
   NewTweet: {
     screen: NewTweetModal,
   },
@@ -220,8 +228,8 @@ const AppNavigator = StackNavigator({
     screen: NewMessageModal,
   },
 }, {
-    mode: 'modal',
-  });
+  mode: 'modal',
+});
 
 // reducer initialization code
 const firstAction = AppNavigator.router.getActionForPathAndParams('Main');

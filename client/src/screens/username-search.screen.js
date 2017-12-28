@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   },
   input: {
     color: 'black',
-    height: 32,
+    height: 48,
   },
   inputBorder: {
     borderColor: '#dbdbdb',
@@ -111,12 +111,12 @@ class UsernameSearch extends Component {
     const isReady = state.params && state.params.mode === 'ready';
     return {
       title: 'Search by Username',
-      headerRight: (
-        isReady ? <Button
-          title="Create"
-          onPress={() => 'onpress'}
-        /> : undefined
-      ),
+      // headerRight: (
+      //   isReady ? <Button
+      //     title="Create"
+      //     onPress={() => 'onpress'}
+      //   /> : undefined
+      // ),
     };
   };
 
@@ -167,7 +167,7 @@ class UsernameSearch extends Component {
     if (nextState.usernameString !== this.state.usernameString) {
       this.refreshNavigation(nextState.usernameString);
     }
-    // console.log('nextState', nextState);
+    console.log('nextState', nextState);
   }
 
   pop() {
@@ -179,6 +179,7 @@ class UsernameSearch extends Component {
     navigation.setParams({
       mode: (usernameString && usernameString.length >= 3) ? 'ready' : undefined,
       handleUsernameSelect: this.handleUsernameSelect,
+      usernameString,
     });
   }
 

@@ -90,8 +90,6 @@ class ProfileScreen extends Component {
       );
     }
 
-    console.log('user', user);
-
     // render list of posts (tweets) for user
     return (
       <Root>

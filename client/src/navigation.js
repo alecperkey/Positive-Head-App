@@ -461,7 +461,6 @@ const userQuery = graphql(USER_QUERY, {
         variables: { userId: user.id },
         updateQuery: (previousResult, { subscriptionData }) => {
           console.log('############### GROUP subscriptionData ###############');
-          debugger;
           const newGroup = subscriptionData.data.groupAdded;
 
           return update(previousResult, {
@@ -481,7 +480,6 @@ const userQuery = graphql(USER_QUERY, {
         },
         updateQuery: (previousResult, { subscriptionData }) => {
           console.log('!!!!!!!!!!!!!!! FOLLOWEDS subscriptionData ###############');
-          debugger;
           if (!subscriptionData.data) {
             return previousResult;
           }

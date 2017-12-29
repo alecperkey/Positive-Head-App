@@ -174,11 +174,8 @@ class NewConversation extends Component {
 
   create(selectedUsers) {
     const { createGroup } = this.props;
-
-
     const recipients = [selectedUsers] || this.state.selected;
 
-    debugger;
     createGroup({
       name: `${recipients[0].username} Convo`,
       userIds: _.map(recipients, 'id'),

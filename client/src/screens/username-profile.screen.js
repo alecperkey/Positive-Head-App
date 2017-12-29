@@ -113,7 +113,6 @@ class UsernameProfile extends Component {
     // TODO determine instead userIsFollowingUsername
     const userIsFollowingUsername = _.some(user.followeds, { id: selectedUser.id });
     const usernameIsFollowing = true; //TODO show 'follows you' 
-    // debugger;
     console.log('##########  userIsFollowingUsername  ##########', userIsFollowingUsername);
     console.log('##########  username.followersCount  ##########', username.followersCount);
     console.log('##########  username.followers.length  ##########', username);

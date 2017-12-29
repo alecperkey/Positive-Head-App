@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   },
   input: {
     color: 'black',
-    height: 32,
+    height: 48,
   },
   inputBorder: {
     borderColor: '#dbdbdb',
@@ -108,28 +108,27 @@ SectionItem.propTypes = {
 class UsernameSearch extends Component {
   static navigationOptions = ({ navigation }) => {
     const { state } = navigation;
-    const isReady = state.params && state.params.mode === 'ready';
+    // const destination = (state.params && state.params.destination) ? state.params.destination : 'UsernameProfile';
     return {
       title: 'Search by Username',
-      headerRight: (
-        isReady ? <Button
-          title="Create"
-          onPress={() => 'onpress'}
-        /> : undefined
-      ),
+      // headerRight: (
+      //   isReady ? <Button
+      //     title="Create"
+      //     onPress={() => 'onpress'}
+      //   /> : undefined
+      // ),
     };
   };
 
   constructor(props) {
     super(props);
 
-    // const { usernameString, searchResults } = props.navigation.state.params;
+    const { destination, usernameString } = props.navigation.state.params;
 
     this.state = {
       selected: [],
-      usernameString: (props.navigation.state.params && props.navigation.state.params.usernameString)
-        ? props.navigation.state.params.usernameString
-        : '',
+      usernameString: usernameString || '',
+      // destination: destination || 'UsernameProfile',
       resultsLength: props.users ?
         props.users.length : 0,
       // TODO rename users prop to usernames for clarity
@@ -167,7 +166,7 @@ class UsernameSearch extends Component {
     if (nextState.usernameString !== this.state.usernameString) {
       this.refreshNavigation(nextState.usernameString);
     }
-    // console.log('nextState', nextState);
+    console.log('nextState', nextState);
   }
 
   pop() {
@@ -178,17 +177,26 @@ class UsernameSearch extends Component {
     const { navigation } = this.props;
     navigation.setParams({
       mode: (usernameString && usernameString.length >= 3) ? 'ready' : undefined,
-      handleUsernameSelect: this.handleUsernameSelect,
+      usernameString,
     });
   }
 
   handleCellSelect(cell) {
-    const { navigate } = this.props.navigation;
-    navigate('UsernameProfile', {
-      selected: this.state.selected,
-      selectedUser: cell,
-      userId: this.props.user.id,
-    });
+    const { navigate, state } = this.props.navigation;
+    const destination = (state.params && state.params.destination)
+      ? state.params.destination
+      : 'UsernameProfile';
+
+    if (typeof (destination) === 'function') {
+      console.log('!!!!!!! EXEC CREATE CONVERSATION !!!!!!!!!!!!!!!!');
+      destination(cell);
+    } else {
+      navigate(destination, {
+        selected: this.state.selected,
+        selectedUser: cell,
+        userId: this.props.user.id,
+      });
+    }
   }
 
   isSelected(user) {

@@ -22,6 +22,7 @@ import UsernameProfileFollowers from './screens/username-profile-followers.scree
 import UsernameProfileFolloweds from './screens/username-profile-followeds.screen';
 import GroupDetails from './screens/group-details.screen';
 import NewGroup from './screens/new-group.screen';
+import NewConversation from './screens/new-conversation.screen';
 import Signin from './screens/signin.screen';
 import Settings from './screens/settings.screen';
 
@@ -208,6 +209,7 @@ const AppNavigator = StackNavigator({
   Messages: { screen: Messages },
   GroupDetails: { screen: GroupDetails },
   NewGroup: { screen: NewGroup },
+  NewConversation: { screen: NewConversation },
   FinalizeGroup: { screen: FinalizeGroup },
   UsernameSearch: {
     screen: UsernameSearch,

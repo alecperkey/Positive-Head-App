@@ -8,6 +8,7 @@ import {
   View,
   TouchableHighlight,
 } from 'react-native';
+import { colors } from '../utils/constants';
 
 const styles = StyleSheet.create({
   cellContainer: {
@@ -32,6 +33,7 @@ const styles = StyleSheet.create({
   checkButtonContainer: {
     paddingRight: 12,
     paddingVertical: 6,
+    backgroundColor: colors.PRIMARY,
   },
   checkButton: {
     borderWidth: 1,
@@ -83,18 +85,20 @@ class UserListItem extends Component {
           />
         </TouchableHighlight>
         <Text style={styles.cellLabel}>{this.props.item.username}</Text>
-        <View style={styles.checkButtonContainer}>
-          <Icon.Button
-            backgroundColor={this.state.isSelected ? 'blue' : 'white'}
-            borderRadius={12}
-            color={'white'}
-            iconStyle={styles.checkButtonIcon}
-            name={'check'}
-            onPress={this.toggle}
-            size={16}
-            style={styles.checkButton}
-          />
-        </View>
+        <TouchableHighlight onPress={this.handleOnSelect}>
+          <View style={styles.checkButtonContainer}>
+            <Icon.Button
+              backgroundColor={this.state.isSelected ? 'blue' : 'white'}
+              borderRadius={12}
+              color={'white'}
+              iconStyle={styles.checkButtonIcon}
+              name={'check'}
+              onPress={this.toggle}
+              size={16}
+              style={styles.checkButton}
+            />
+          </View>
+        </TouchableHighlight>
       </View>
     );
   }

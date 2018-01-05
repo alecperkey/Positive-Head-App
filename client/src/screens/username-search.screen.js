@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { graphql, compose } from 'react-apollo';
 import AlphabetListView from 'react-native-alphabetlistview';
-import { NavigationActions } from 'react-navigation';
 import { connect } from 'react-redux';
 
 import USERS_QUERY from '../graphql/users.query';
@@ -107,8 +106,7 @@ SectionItem.propTypes = {
 
 class UsernameSearch extends Component {
   static navigationOptions = ({ navigation }) => {
-    const { state } = navigation;
-    // const destination = (state.params && state.params.destination) ? state.params.destination : 'UsernameProfile';
+    // const { state } = navigation;
     return {
       title: 'Search by Username',
       // headerRight: (
@@ -123,7 +121,11 @@ class UsernameSearch extends Component {
   constructor(props) {
     super(props);
 
-    const { destination, usernameString } = props.navigation.state.params;
+    const { usernameString } = (
+      props.navigation &&
+      props.navigation.state &&
+      props.navigation.state.params
+    ) ? props.navigation.state.params : {};
 
     this.state = {
       selected: [],
@@ -181,6 +183,8 @@ class UsernameSearch extends Component {
     });
   }
 
+  // TODO separate this into 2 functions to be passed to ListView
+  // handleCellThumbnailActionSelect, handleCellMainActionSelect
   handleCellSelect(cell) {
     const { navigate, state } = this.props.navigation;
     const destination = (state.params && state.params.destination)
@@ -271,12 +275,20 @@ UsernameSearch.propTypes = {
   user: PropTypes.shape({
     id: PropTypes.number,
   }),
+  users: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number,
+    }),
+  ),
 };
 
 const usersQuery = graphql(USERS_QUERY, {
   options: (ownProps) => {
     // console.log(ownProps);
-    let usernameQuery = (ownProps.navigation.state.params && ownProps.navigation.state.params.usernameString)
+    let usernameQuery = (
+      ownProps.navigation.state.params &&
+      ownProps.navigation.state.params.usernameString
+    )
       ? ownProps.navigation.state.params.usernameString
       : '';
     if (usernameQuery.length <= 2) { usernameQuery = ''; }

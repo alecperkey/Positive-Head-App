@@ -47,25 +47,52 @@ const styles = StyleSheet.create({
   },
 });
 
+const MainActionComponent = ({ type }) => {
+  const availableTypes = ['write'];
+  if (type === availableTypes[0]) {
+    return (
+      <Icon color={colors.PRIMARY} size={20} name="pencil" />
+    );
+  }
+  return undefined;
+};
+MainActionComponent.propTypes = {
+  type: PropTypes.string,
+};
+
 class UserListItem extends Component {
   constructor(props) {
     super(props);
     this.toggle = this.toggle.bind(this);
     this.handleOnSelect = this.handleOnSelect.bind(this);
+    this.handleOnThumbnailActionSelect = this.handleOnThumbnailActionSelect.bind(this);
+    this.handleOnMainActionSelect = this.handleOnMainActionSelect.bind(this);
     this.state = {
-      isSelected: props.isSelected(props.item),
+      isSelected: (props.isSelected) ? props.isSelected(props.item) : false,
     };
   }
 
   componentWillReceiveProps(nextProps) {
     this.setState({
-      isSelected: nextProps.isSelected(nextProps.item),
+      isSelected: (nextProps.isSelected) ? nextProps.isSelected(nextProps.item) : false,
     });
   }
 
   handleOnSelect() {
     if (this.props.item) {
       this.props.onSelect(this.props.item);
+    }
+  }
+
+  handleOnMainActionSelect() {
+    if (this.props.onMainActionSelect) {
+      this.props.onMainActionSelect(this.props.item);
+    }
+  }
+
+  handleOnThumbnailActionSelect() {
+    if (this.props.onThumbnailActionSelect) {
+      this.props.onThumbnailActionSelect(this.props.item);
     }
   }
 
@@ -78,27 +105,30 @@ class UserListItem extends Component {
   render() {
     return (
       <View style={styles.cellContainer}>
-        <TouchableHighlight onPress={this.handleOnSelect}>
-          <Image
-            style={styles.cellImage}
-            source={{ uri: 'https://reactjs.org/logo-og.png' }}
-          />
-        </TouchableHighlight>
-        <Text style={styles.cellLabel}>{this.props.item.username}</Text>
-        <TouchableHighlight onPress={this.handleOnSelect}>
-          <View style={styles.checkButtonContainer}>
-            <Icon.Button
-              backgroundColor={this.state.isSelected ? 'blue' : 'white'}
-              borderRadius={12}
-              color={'white'}
-              iconStyle={styles.checkButtonIcon}
-              name={'check'}
-              onPress={this.toggle}
-              size={16}
-              style={styles.checkButton}
+        {(this.props.onThumbnailActionSelect) ?
+          <TouchableHighlight onPress={this.handleOnThumbnailActionSelect}>
+            <Image
+              style={styles.cellImage}
+              source={{ uri: 'https://reactjs.org/logo-og.png' }}
             />
-          </View>
-        </TouchableHighlight>
+          </TouchableHighlight> : undefined
+        }
+        {(this.props.onSelect && !this.props.onThumbnailActionSelect) ?
+          <TouchableHighlight onPress={this.handleOnSelect}>
+            <Image
+              style={styles.cellImage}
+              source={{ uri: 'https://reactjs.org/logo-og.png' }}
+            />
+          </TouchableHighlight> : undefined
+        }
+        <Text style={styles.cellLabel}>{this.props.item.username}</Text>
+        {(this.props.onMainActionSelect && this.props.mainActionType) ?
+          <TouchableHighlight onPress={this.handleOnMainActionSelect}>
+            <View style={styles.cellImage}>
+              <MainActionComponent type={this.props.mainActionType} />
+            </View>
+          </TouchableHighlight> : undefined
+        }
       </View>
     );
   }
@@ -114,6 +144,10 @@ UserListItem.propTypes = {
   }).isRequired,
   // used by new-group.screen
   toggle: PropTypes.func,
+  // used by new-conversation.screen
+  onMainActionSelect: PropTypes.func,
+  onThumbnailActionSelect: PropTypes.func,
+  mainActionType: PropTypes.oneOf(['write']),
 };
 
 export default UserListItem;

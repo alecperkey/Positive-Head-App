@@ -4,22 +4,23 @@ import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   Button,
+  SectionList,
   StyleSheet,
   Text,
   View,
+  H1,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import { graphql, compose } from 'react-apollo';
 import { NavigationActions } from 'react-navigation';
-import AlphabetListView from 'react-native-alphabetlistview';
+import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 import update from 'immutability-helper';
 import { connect } from 'react-redux';
 
 import USER_QUERY from '../graphql/user.query';
 import CREATE_GROUP_MUTATION from '../graphql/create-group.mutation';
 
-import SelectedUserList from '../components/selected-user-list.component';
 import UserListItem from '../components/user-list-item.component';
 import ButtonHeader from '../components/button-header.component';
 
@@ -75,7 +76,7 @@ SectionItem.propTypes = {
 };
 
 class NewConversation extends Component {
-  static navigationOptions = ({ navigation, screenProps }) => {
+  static navigationOptions = ({ navigation }) => {
     const { state, navigate } = navigation;
     // const isReady = state.params && state.params.mode === 'ready';
     // const {
@@ -112,12 +113,22 @@ class NewConversation extends Component {
 
     this.state = {
       selected: selected || [],
-      followers: props.user ?
-        _.groupBy(props.user.followers, follower => follower.username.charAt(0).toUpperCase()) : [],
+      followers: props.user ? props.user.followers : [],
     };
 
     this.create = this.create.bind(this);
     this.goToNewConversation = this.goToNewConversation.bind(this);
+    this.goToUsernameProfile = this.goToUsernameProfile.bind(this);
+
+    this.getItemLayout = sectionListGetItemLayout({
+      // The height of the row with rowData at the given sectionIndex and rowIndex
+      getItemHeight: (rowData, sectionIndex, rowIndex) => sectionIndex === 0 ? 100 : 50,
+
+      // These three properties are optional
+      // getSeparatorHeight: () => 1 / PixelRatio.get(), // The height of your separators
+      getSectionHeaderHeight: () => 20, // The height of your section headers
+      getSectionFooterHeight: () => 10, // The height of your section footers
+    });
   }
 
   componentDidMount() {
@@ -128,9 +139,7 @@ class NewConversation extends Component {
     const state = {};
     if (nextProps.user && nextProps.user.followers && nextProps.user !== this.props.user) {
       // TODO fix bug formatters is not a function (with [] empty followers only?)
-      state.followers = sortObject(
-        _.groupBy(nextProps.user.followers, follower => follower.username.charAt(0).toUpperCase()),
-      );
+      state.followers = nextProps.user.followers;
     }
 
     if (nextProps.navigation.state.params && nextProps.navigation.state.params.selected) {
@@ -172,6 +181,14 @@ class NewConversation extends Component {
     ],
   });
 
+  goToUsernameProfile(item) {
+    const { navigation, user } = this.props;
+    navigation.navigate('UsernameProfile', {
+      selectedUser: item,
+      userId: user.id,
+    });
+  }
+
   create(selectedUsers) {
     const { createGroup } = this.props;
     const recipients = [selectedUsers] || this.state.selected;
@@ -191,7 +208,7 @@ class NewConversation extends Component {
         ],
       );
     });
-  }
+  }      
 
   render() {
     const { user, loading } = this.props;
@@ -204,30 +221,73 @@ class NewConversation extends Component {
         </View>
       );
     }
-    console.log('followers', this.state.followers);
-    return (
-      <View style={styles.container}>
-        {this.state.selected.length ? <View style={styles.selected}>
-          <SelectedUserList
-            data={this.state.selected}
-            remove={this.toggle}
-          />
-        </View> : undefined}
-        {_.keys(this.state.followers).length ? <AlphabetListView
-          style={{ flex: 1 }}
-          data={this.state.followers}
-          cell={UserListItem}
-          cellHeight={30}
-          cellProps={{
-            isSelected: this.isSelected,
-            toggle: this.toggle,
-          }}
-          sectionListItem={SectionItem}
-          sectionHeader={SectionHeader}
-          sectionHeaderHeight={22.5}
-        /> : undefined}
-      </View>
+
+    if (this.state.followers && !this.state.followers.length) {
+      return (
+        <View style={styles.container}>
+          { /* <Header onPress={this.goToNewGroup} /> */ }
+          <Text style={styles.warning}>{'Looks like you have no followers yet.'}</Text>
+        </View>
+      );
+    }
+
+    const renderFollowerRow = ({ item, index, section }) => (
+      <UserListItem
+        item={item}
+        onThumbnailActionSelect={() => this.goToUsernameProfile(item)}
+        onMainActionSelect={() => this.create(item)}
+        mainActionType="write"
+      />
     );
+
+    const sectionKeyExtractor = section => item => `${section}${item.id}`;
+    console.log(renderFollowerRow);
+    console.log(sectionKeyExtractor(1)({ id: 1, username: 'Joe' }));
+
+    return (
+      <SectionList
+        renderSectionHeader={({ section }) => <Text title={section.title}>{section.title}</Text>}
+        sections={[ // heterogeneous rendering between sections
+          {
+            title: 'Following',
+            data: this.props.user.followeds,
+            keyExtractor: sectionKeyExtractor(0),
+            renderItem: renderFollowerRow,
+          },
+          {
+            title: 'Followers',
+            data: this.state.followers,
+            keyExtractor: sectionKeyExtractor(1),
+            renderItem: renderFollowerRow,
+          },
+        ]}
+        getItemLayout={this.getItemLayout}
+      />
+    );
+
+    // return (
+    //   <View style={styles.container}>
+    //     {this.state.selected.length ? <View style={styles.selected}>
+    //       <SelectedUserList
+    //         data={this.state.selected}
+    //         remove={this.toggle}
+    //       />
+    //     </View> : undefined}
+    //     {_.keys(this.state.followers).length ? <AlphabetListView
+    //       style={{ flex: 1 }}
+    //       data={this.state.followers}
+    //       cell={UserListItem}
+    //       cellHeight={30}
+    //       cellProps={{
+    //         isSelected: this.isSelected,
+    //         toggle: this.toggle,
+    //       }}
+    //       sectionListItem={SectionItem}
+    //       sectionHeader={SectionHeader}
+    //       sectionHeaderHeight={22.5}
+    //     /> : undefined}
+    //   </View>
+    // );
   }
 }
 

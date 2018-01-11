@@ -124,7 +124,7 @@ export default function ProfileHeader({
   return (
     <Root>
       <Heading>
-        <Avatar source={{ uri: `${avatar}` }} />
+        <Avatar source={{ uri: avatar }} />
         <MetaContainer>
           <TopMetaContainer>
             <MetaBox>

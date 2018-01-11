@@ -26,7 +26,6 @@ const Avatar = styled.Image`
   height: ${AVATAR_SIZE};
   width: ${AVATAR_SIZE};
   borderRadius: ${AVATAR_SIZE / 2};
-  backgroundColor: yellow;
   borderColor: ${props => props.theme.SECONDARY};
   borderWidth: 1;
 `;

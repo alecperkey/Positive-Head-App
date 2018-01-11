@@ -97,7 +97,7 @@ db.sync({ force: true }).then(() => _.times(GROUPS, () => GroupModel.create({
     username: faker.internet.userName(),
     firstName: faker.name.firstName(),
     lastName: faker.name.lastName(),
-    avatar: `https://randomuser.me/api/portraits/women/${i}.jpg`,
+    avatar: `${i}.jpg`,
     password: hash,
     version: 1,
   }).then((user) => {

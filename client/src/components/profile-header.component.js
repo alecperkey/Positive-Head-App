@@ -26,7 +26,6 @@ const Avatar = styled.Image`
   height: ${AVATAR_SIZE};
   width: ${AVATAR_SIZE};
   borderRadius: ${AVATAR_SIZE / 2};
-  backgroundColor: yellow;
   borderColor: ${props => props.theme.SECONDARY};
   borderWidth: 1;
 `;
@@ -125,7 +124,7 @@ export default function ProfileHeader({
   return (
     <Root>
       <Heading>
-        <Avatar source={{ uri: avatar }} />
+        <Avatar source={{ uri: `${avatar}` }} />
         <MetaContainer>
           <TopMetaContainer>
             <MetaBox>

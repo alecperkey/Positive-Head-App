@@ -10,7 +10,7 @@ class HomeScreen extends Component {
   render() {
     return (
       <Root>
-        <T>Explore</T>
+        <T>Home</T>
       </Root>
     );
   }

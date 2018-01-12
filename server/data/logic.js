@@ -343,6 +343,87 @@ export const tweetLogic = {
   },
 };
 
+export const feedLogic = {
+  followedsTweets(user, { feedConnection = {} }) {
+    const { first, last, before, after } = feedConnection;
+
+    // const Op = Sequelize.Op;
+    // console.log('Sequelize', Sequelize);
+    console.log('!!!!!!!!!!!user', user);
+
+    // get followedsIds array
+    return user.getFolloweds({ attributes: ['id'] }).then((results) => {
+      // base query -- get tweets from the right users (followeds)
+      const followedIds = map(results, result => result.Followeds.dataValues.followedId);
+      console.log('$$$$$$ followedIds', followedIds);
+
+      const where = {
+        userId: {
+          $or: [...followedIds], // userId on tweet is author
+        },
+      };
+
+      // because we return messages from newest -> oldest
+      // before actually means newer (date > cursor)
+      // after actually means older (date < cursor)
+
+      if (before) {
+        // convert base-64 to utf8 iso date and use in Date constructor
+        where.id = { $gt: Buffer.from(before, 'base64').toString() };
+      }
+
+      if (after) {
+        where.id = { $lt: Buffer.from(after, 'base64').toString() };
+      }
+
+      return Tweet.findAll({
+        where,
+        order: [['id', 'DESC']],
+        limit: first || last,
+      }).then((tweets) => {
+        const edges = tweets.map(tweet => ({
+          cursor: Buffer.from(tweet.id.toString()).toString('base64'), // convert createdAt to cursor
+          node: tweet, // the node is the message itself
+        }));
+
+        return {
+          edges,
+          pageInfo: {
+            hasNextPage() {
+              if (tweets.length < (last || first)) {
+                return Promise.resolve(false);
+              }
+
+              return Tweet.findOne({
+                where: {
+                  userId: {
+                    $or: [...followedIds], // userId on tweet is author
+                  },
+                  id: {
+                    [before ? '$gt' : '$lt']: tweets[tweets.length - 1].id,
+                  },
+                },
+                order: [['id', 'DESC']],
+              }).then(tweet => !!tweet);
+            },
+            hasPreviousPage() {
+              return Tweet.findOne({
+                where: {
+                  userId: {
+                    $or: [...followedIds], // userId on tweet is author
+                  },
+                  id: where.id,
+                },
+                order: [['id']],
+              }).then(tweet => !!tweet);
+            },
+          },
+        };
+      });
+    });
+  },
+};
+
 export const userLogic = {
   avatar(user, args, ctx) {
     return user.avatar ? getFileUrl(user.avatar) : null;
@@ -585,6 +666,18 @@ export const subscriptionLogic = {
         if (user.id !== args.userId) {
           return Promise.reject('Unauthorized');
         }
+
+        baseParams.context = ctx;
+        return baseParams;
+      });
+  },
+  tweetAdded(baseParams, args, ctx) {
+    return getAuthenticatedUser(ctx)
+      .then((user) => {
+        if (user.id !== args.userId) {
+          return Promise.reject('Unauthorized');
+        }
+        console.log('##########  tweetAdded  ##########');
 
         baseParams.context = ctx;
         return baseParams;

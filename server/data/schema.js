@@ -82,6 +82,16 @@ export const Schema = [`
     node: Message!
   }
 
+  type FeedConnection {
+    edges: [FeedEdge]
+    pageInfo: PageInfo!
+  }
+
+  type FeedEdge {
+    cursor: String!
+    node: Tweet!
+  }
+
   type PageInfo {
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
@@ -111,6 +121,7 @@ export const Schema = [`
     tweets: [Tweet] # tweets the user authored
     friends: [User] # user's friends/contacts
     followeds: [User] # all being followed by this user
+    followedsTweetFeed(feedConnection: ConnectionInput): FeedConnection # feed of followeds' tweets
     followers: [User] # all following this user
     followedsCount: Int
     followersCount: Int

@@ -7,11 +7,12 @@ import jwt from 'jsonwebtoken';
 import { Group, Message, User, Tweet } from './connectors';
 import { pubsub } from '../subscriptions';
 import { JWT_SECRET } from '../config';
-import { groupLogic, messageLogic, userLogic, usersLogic, usernameLogic, tweetLogic } from './logic';
+import { groupLogic, feedLogic, messageLogic, userLogic, usersLogic, usernameLogic, tweetLogic } from './logic';
 
 const MESSAGE_ADDED_TOPIC = 'messageAdded';
 const GROUP_ADDED_TOPIC = 'groupAdded';
 const FOLLOWED_ADDED = 'followedAdded';
+// const TWEET_ADDED = 'tweetAdded';
 
 export const Resolvers = {
   Date: GraphQLDate,
@@ -53,6 +54,12 @@ export const Resolvers = {
         return group;
       });
     },
+    // createTweet(_, args, ctx) {
+    //   return tweetLogic.createTweet(_, args, ctx).then((tweet) => {
+    //     pubsub.publish(TWEET_ADDED, { [TWEET_ADDED]: tweet });
+    //     return tweet;
+    //   });
+    // },
     updateFollowed(_, args, ctx) {
       return userLogic.updateFollowed(_, args, ctx).then((user) => {
         // returning the currentuser, not the newly followed user...
@@ -163,6 +170,21 @@ export const Resolvers = {
         },
       ),
     },
+    // tweetAdded: {
+    //   subscribe: withFilter(
+    //     () => pubsub.asyncIterator(TWEET_ADDED),
+    //     (payload, args, ctx) => {
+    //       return ctx.user.then((user) => {
+    //         return Boolean(
+    //           args.userId &&
+    //           // if tweet author is followed by current user
+    //           ~map(args.user.followeds, 'id').indexOf(payload.tweetAdded.authorId) &&
+    //           user.id !== payload.tweetAdded.authorId, // don't send current user's own tweet to him
+    //         );
+    //       });
+    //     },
+    //   ),
+    // },
     followedAdded: {
       subscribe: withFilter(
         () => pubsub.asyncIterator(FOLLOWED_ADDED),
@@ -228,6 +250,9 @@ export const Resolvers = {
     },
     followers(user, args, ctx) {
       return userLogic.followers(user, args, ctx);
+    },
+    followedsTweetFeed(user, args, ctx) {
+      return feedLogic.followedsTweets(user, args, ctx);
     },
     groups(user, args, ctx) {
       return userLogic.groups(user, args, ctx);

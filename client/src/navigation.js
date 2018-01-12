@@ -55,7 +55,7 @@ const MainScreenNavigator = TabNavigator({
 const Tabs = TabNavigator(
   {
     Home: {
-      screen: HomeScreen,
+      screen: ExploreScreen,
       navigationOptions: () => ({
         headerTitle: language.FOLLOWING_FEED,
         tabBarIcon: ({ tintColor }) =>

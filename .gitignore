@@ -4,3 +4,4 @@ yarn-error.log
 .vscode
 chatty.sqlite
 .idea
+rootkey.csv

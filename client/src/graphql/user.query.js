@@ -62,6 +62,27 @@ export const USER_QUERY = gql`
           hasNextPage
           hasPreviousPage
         }
+      }      
+      followersTweetFeed(feedConnection: $feedConnection) {
+        edges {
+          cursor
+          node {
+            id
+            createdAt
+            text
+            author {
+              id
+              username
+              firstName
+              lastName
+              avatar              
+            }
+          }
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+        }
       }
       tweets {
         id

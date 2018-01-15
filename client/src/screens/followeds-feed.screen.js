@@ -14,7 +14,7 @@ const Root = styled.View``;
 
 const T = styled.Text``;
 
-class ExploreScreen extends Component {
+class FollowedsFeedScreen extends Component {
   static navigationOptions = {
     title: 'Chats',
   };
@@ -84,7 +84,7 @@ class ExploreScreen extends Component {
   }
 }
 
-ExploreScreen.propTypes = {
+FollowedsFeedScreen.propTypes = {
   navigation: PropTypes.shape({
     navigate: PropTypes.func,
   }),
@@ -143,5 +143,5 @@ const mapStateToProps = ({ auth }) => ({
 export default compose(
   connect(mapStateToProps),
   userQuery,
-)(ExploreScreen);
+)(FollowedsFeedScreen);
 

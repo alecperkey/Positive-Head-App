@@ -254,6 +254,9 @@ export const Resolvers = {
     followedsTweetFeed(user, args, ctx) {
       return feedLogic.followedsTweets(user, args, ctx);
     },
+    followersTweetFeed(user, args, ctx) {
+      return feedLogic.followersTweets(user, args, ctx);
+    },
     groups(user, args, ctx) {
       return userLogic.groups(user, args, ctx);
     },

@@ -26,9 +26,9 @@ import NewConversation from './screens/new-conversation.screen';
 import Signin from './screens/signin.screen';
 import Settings from './screens/settings.screen';
 
-import HomeScreen from './screens/home.screen';
 import ProfileScreen from './screens/profile.screen';
-import ExploreScreen from './screens/explore.screen';
+import FollowersFeedScreen from './screens/followers-feed.screen';
+import FollowedsFeedScreen from './screens/followeds-feed.screen';
 import NotificationsScreen from './screens/notifications.screen';
 import NewTweetScreen from './screens/new.tweet.screen';
 import NewMessageScreen from './screens/new-message.screen';
@@ -55,7 +55,7 @@ const MainScreenNavigator = TabNavigator({
 const Tabs = TabNavigator(
   {
     Home: {
-      screen: ExploreScreen,
+      screen: FollowedsFeedScreen,
       navigationOptions: () => ({
         headerTitle: language.FOLLOWING_FEED,
         tabBarIcon: ({ tintColor }) =>
@@ -64,7 +64,7 @@ const Tabs = TabNavigator(
       }),
     },
     Profile: {
-      screen: ProfileScreen,
+      screen: FollowersFeedScreen,
       navigationOptions: () => ({
         headerTitle: language.MY_FEED,
         tabBarIcon: ({ tintColor }) =>

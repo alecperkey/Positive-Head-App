@@ -78,8 +78,8 @@ GroupModel.belongsToMany(UserModel, { through: 'GroupUser' });
 // create fake starter data
 const GROUPS = 4;
 const USERS_PER_GROUP = 5;
-const MESSAGES_PER_USER = 1;
-const TWEETS_PER_USER = 1;
+const MESSAGES_PER_USER = 10;
+const TWEETS_PER_USER = 30;
 faker.seed(123); // get consistent data every time we reload app
 
 // you don't need to stare at this code too hard

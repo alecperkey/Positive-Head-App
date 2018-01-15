@@ -122,6 +122,7 @@ export const Schema = [`
     friends: [User] # user's friends/contacts
     followeds: [User] # all being followed by this user
     followedsTweetFeed(feedConnection: ConnectionInput): FeedConnection # feed of followeds' tweets
+    followersTweetFeed(feedConnection: ConnectionInput): FeedConnection # feed of followeds' tweets
     followers: [User] # all following this user
     followedsCount: Int
     followersCount: Int

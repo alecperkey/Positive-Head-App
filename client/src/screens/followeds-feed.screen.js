@@ -96,7 +96,7 @@ FollowedsFeedScreen.propTypes = {
     email: PropTypes.string.isRequired,
     firstName: PropTypes.string.isRequired,
     lastName: PropTypes.string.isRequired,
-    avatar: PropTypes.string.isRequired,
+    avatar: PropTypes.string,
     groups: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.number.isRequired,

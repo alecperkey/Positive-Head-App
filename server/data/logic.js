@@ -338,8 +338,74 @@ export const groupLogic = {
 
 export const tweetLogic = {
   author(tweet, args, ctx) {
-    // TODO figure out how to get avatar to show up
     return tweet.getUser({ attributes: ['id', 'username', 'firstName', 'lastName', 'avatar'] });
+  },
+  isFavorited(tweet, args, ctx) {
+    return getAuthenticatedUser(ctx).then((user) => {
+      if (!user) {
+        return Promise.reject('Unauthorized');
+      }
+      return user.getFavoritedTweets({ attributes: ['id'] })
+        .then((favoritedTweets) => { // eslint-disable-line arrow-body-style
+          const alreadyFavorites = map(favoritedTweets, ft => ft.dataValues.id);
+          const isFavorited = (alreadyFavorites.indexOf(tweet.id) !== -1);
+          return isFavorited;
+        });
+    });
+  },
+  favoriteTweet(_, args, ctx) {
+    const { id } = args;
+    console.log('##### args ####', args);
+    return getAuthenticatedUser(ctx).then((user) => {
+      if (!user) {
+        return Promise.reject('Unauthorized');
+      }
+      return user.getFavoritedTweets({ attributes: ['id'] })
+        .then((favoritedTweets) => { // eslint-disable-line arrow-body-style
+          return Tweet.findOne({
+            where: { id }, // the tweet's id to favorite or unfavorite
+          }).then((tweet) => { // eslint-disable-line arrow-body-style
+            if (!tweet) {
+              Promise.reject('No tweet found');
+            }
+            const alreadyFavorites = map(favoritedTweets, ft => ft.dataValues.id);
+            if (alreadyFavorites.indexOf(id) !== -1) {
+              return tweet.removeFavoritedTweet(user).then((updatedTweet) => {
+                // if newly destroyed (unfavorited) association, updatedTweet = 1
+                if (updatedTweet && !updatedTweet.length) {
+                  // console.log('##########  updatedTweet:unfavoriting ##########', updatedTweet);
+                  // decrement tweet.favoriteCount
+                  return tweet.decrement('favoriteCount').then((decrementedTweet) => {
+                    return Tweet.findOne({
+                      where: { id },
+                    }).then((result) => {
+                      // console.log('##########  result  ##########', result);
+                      return result;
+                    });
+                  });
+                }
+              });
+            }
+            else {
+              return tweet.addFavoritedTweet(user).then((updatedTweet) => {
+                // if record exists, updatedTweet = [] 
+                if (updatedTweet && updatedTweet.length) {
+                  // console.log('##### updatedTweet:favoriting ####', updatedTweet);
+                  // increment tweet.favoriteCount
+                  return tweet.increment('favoriteCount').then((incrementedTweet) => {
+                    return Tweet.findOne({
+                      where: { id },
+                    }).then((result) => {
+                      // console.log('##########  result  ##########', result);
+                      return result;
+                    });
+                  });
+                }
+              });
+            }
+          });
+        });
+    });
   },
 };
 

@@ -119,6 +119,7 @@ export const Schema = [`
     messages: [Message] # messages sent by user
     groups: [Group] # groups the user belongs to
     tweets: [Tweet] # tweets the user authored
+    favoriteTweets: [Tweet] # tweets the user favorited
     friends: [User] # user's friends/contacts
     followeds: [User] # all being followed by this user
     followedsTweetFeed(feedConnection: ConnectionInput): FeedConnection # feed of followeds' tweets
@@ -146,6 +147,8 @@ export const Schema = [`
     author: User # tweet's author
     text: String! # message text
     createdAt: Date! # when message was created
+    favoriteCount: Int! # count of favorites
+    isFavorited: Boolean # for current user, determined in TweetFeed logic 
   }
 
   # query for types
@@ -171,6 +174,7 @@ export const Schema = [`
     # send a message to a group
     createMessage(message: CreateMessageInput!): Message
     createGroup(group: CreateGroupInput!): Group
+    favoriteTweet(id: Int!): Tweet
     updateFollowed(user: UpdateFollowedInput!): User
     deleteGroup(id: Int!): Group
     leaveGroup(id: Int!): Group # let user leave group

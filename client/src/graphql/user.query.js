@@ -49,6 +49,8 @@ export const USER_QUERY = gql`
             id
             createdAt
             text
+            favoriteCount
+            isFavorited
             author {
               id
               username

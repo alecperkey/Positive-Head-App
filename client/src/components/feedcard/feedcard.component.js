@@ -5,7 +5,7 @@ import Placeholder from 'rn-placeholder';
 
 import FeedCardHeader from './feedcard-header.component';
 import FeedCardBottom from './feedcard-bottom.component';
-// import FAVORITE_TWEET_MUTATION from '../../graphql/mutations/favoriteTweet';
+import FAVORITE_TWEET_MUTATION from '../../graphql/favorite-tweet.mutation';
 
 const Root = styled.View`
   minHeight: 180;
@@ -69,11 +69,13 @@ function FeedCard({
       <FeedCardBottom
         isFavorited={isFavorited}
         favoriteCount={favoriteCount}
+        onFavoritePress={favorite}
       />
     </Root>
   );
 }
 
+// included in user query -- shown here for clarity
 FeedCard.fragments = {
   tweet: gql`
     fragment FeedCard on Tweet {
@@ -92,24 +94,24 @@ FeedCard.fragments = {
   `
 }
 
-export default FeedCard;
+// export default FeedCard;
 
-// export default graphql(FAVORITE_TWEET_MUTATION, {
-//   props: ({ ownProps, mutate }) => ({
-//     favorite: () =>
-//       mutate({
-//         variables: { _id: ownProps._id },
-//         optimisticResponse: {
-//           __typename: 'Mutation',
-//           favoriteTweet: {
-//             __typename: 'Tweet',
-//             _id: ownProps._id,
-//             favoriteCount: ownProps.isFavorited
-//               ? ownProps.favoriteCount - 1
-//               : ownProps.favoriteCount + 1,
-//             isFavorited: !ownProps.isFavorited,
-//           },
-//         },
-//       }),
-//   }),
-// })(FeedCard);
+export default graphql(FAVORITE_TWEET_MUTATION, {
+  props: ({ ownProps, mutate }) => ({
+    favorite: () =>
+      mutate({
+        variables: { id: ownProps.id },
+        optimisticResponse: {
+          __typename: 'Mutation',
+          favoriteTweet: {
+            __typename: 'Tweet',
+            id: ownProps.id,
+            favoriteCount: ownProps.isFavorited
+              ? ownProps.favoriteCount - 1
+              : ownProps.favoriteCount + 1,
+            isFavorited: !ownProps.isFavorited,
+          },
+        },
+      }),
+  }),
+})(FeedCard);

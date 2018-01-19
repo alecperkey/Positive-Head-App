@@ -24,6 +24,7 @@ const MessageModel = db.define('message', {
 // define tweets
 const TweetModel = db.define('tweet', {
   text: { type: Sequelize.STRING },
+  favoriteCount: { type: Sequelize.INTEGER },
 });
 
 // define users
@@ -56,11 +57,16 @@ UserModel.belongsToMany(UserModel, { through: 'Friends', as: 'friends' });
 // users belong to multiple tweets as author
 UserModel.belongsToMany(TweetModel, { through: 'TweetAuthor' });
 
-// messages are sent from users
-MessageModel.belongsTo(UserModel);
-
 // tweets are sent from users
 TweetModel.belongsTo(UserModel);
+
+// users belong to multiple favoriteTweets as the user marking a tweet as favorite
+UserModel.belongsToMany(TweetModel, { through: 'FavoritedTweet', as: 'favoritedTweets' });
+TweetModel.belongsToMany(UserModel, { through: 'FavoritedTweet', as: 'favoritedTweets' });
+
+
+// messages are sent from users
+MessageModel.belongsTo(UserModel);
 
 // track last read message in a group for a given user
 MessageModel.belongsToMany(UserModel, { through: 'MessageUser', as: 'lastRead' });
@@ -78,8 +84,8 @@ GroupModel.belongsToMany(UserModel, { through: 'GroupUser' });
 // create fake starter data
 const GROUPS = 4;
 const USERS_PER_GROUP = 5;
-const MESSAGES_PER_USER = 10;
-const TWEETS_PER_USER = 30;
+const MESSAGES_PER_USER = 5;
+const TWEETS_PER_USER = 5;
 faker.seed(123); // get consistent data every time we reload app
 
 // you don't need to stare at this code too hard
@@ -126,6 +132,7 @@ db.sync({ force: true }).then(() => _.times(GROUPS, () => GroupModel.create({
         current.createTweet({
           userId: current.id,
           text: faker.lorem.sentences(3),
+          favoriteCount: 0,
         });
       });
       // current user addFriend for each other user
@@ -136,12 +143,12 @@ db.sync({ force: true }).then(() => _.times(GROUPS, () => GroupModel.create({
       });
       _.each(usersOfGroup, (user, j) => {
         // current user gains a follower from group with 50% chance
-        if (i !== j && Math.random() < 0.5) {
+        if (i !== j && Math.random() < 0.8) {
           current.addFollower(user);
           current.increment('followersCount');
         }
         // current user follows others in group with 50% chance
-        if (i !== j && Math.random() < 0.5) {
+        if (i !== j && Math.random() < 0.8) {
           current.addFollowed(user);
           current.increment('followedsCount');
         }

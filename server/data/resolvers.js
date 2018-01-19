@@ -13,6 +13,7 @@ const MESSAGE_ADDED_TOPIC = 'messageAdded';
 const GROUP_ADDED_TOPIC = 'groupAdded';
 const FOLLOWED_ADDED = 'followedAdded';
 // const TWEET_ADDED = 'tweetAdded';
+const TWEET_FAVORITED = 'tweetFavorited';
 
 export const Resolvers = {
   Date: GraphQLDate,
@@ -60,6 +61,12 @@ export const Resolvers = {
     //     return tweet;
     //   });
     // },
+    favoriteTweet(_, args, ctx) {
+      return tweetLogic.favoriteTweet(_, args, ctx).then((tweet) => {
+        pubsub.publish(TWEET_FAVORITED, { [TWEET_FAVORITED]: tweet });
+        return tweet;
+      });
+    },
     updateFollowed(_, args, ctx) {
       return userLogic.updateFollowed(_, args, ctx).then((user) => {
         // returning the currentuser, not the newly followed user...
@@ -233,6 +240,9 @@ export const Resolvers = {
   Tweet: {
     author(tweet, args, ctx) {
       return tweetLogic.author(tweet, args, ctx);
+    },
+    isFavorited(tweet, args, ctx) {
+      return tweetLogic.isFavorited(tweet, args, ctx);
     }
   },
   User: {

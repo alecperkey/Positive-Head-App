@@ -1,0 +1,10 @@
+caption: Dashboard
+created: 20141203190920779
+list-before: 
+modified: 20180131180715418
+no_edit: true
+tags: Contents
+title: $:/plugins/inmysocks/Dashboard/Dashboard
+type: text/vnd.tiddlywiki
+
+<<tabs "[[$:/plugins/inmysocks/Dashboard/DashboardTemplate]] [tag[Dashboard Tab]]" [[$:/plugins/inmysocks/Dashboard/DashboardTemplate]]>>
